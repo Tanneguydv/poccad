@@ -1,0 +1,19 @@
+from math import atan, cos, sin, pi
+sphere_radius = 30.0
+sphere_angle = atan(2)
+sphere_origin = i.gp_Ax2(i.gp_Pnt(0, 0, 0), i.gp_Dir(0, 0, 1))
+sphere = i.BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()
+box = i.BRepPrimAPI_MakeBox(30, 60, 60).Shape()
+trns = i.gp_Trsf()
+trns.SetTranslation(i.gp_Vec(-30, -30, -30))
+mold_basis = i.BRepBuilderAPI_Transform(box, trns).Shape()
+display.DisplayShape(mold_basis, update=True)
+mold = i.BRepAlgoAPI_Cut(mold_basis, sphere).Shape()
+display.EraseAll()
+display.DisplayShape(mold, update=True, material=i.Graphic3d_NOM_STEEL)
+
+sphere2_radius = 3.0
+sphere2_angle = atan(2)
+sphere2_origin = i.gp_Ax2(i.gp_Pnt(0, 0, 0), i.gp_Dir(0, 0, 1))
+sphere2 = i.BRepPrimAPI_MakeSphere(sphere2_origin, sphere2_radius, -sphere2_angle, sphere2_angle).Shape()
+display.DisplayShape(sphere2)
