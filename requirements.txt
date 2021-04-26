@@ -1,4 +1,4 @@
 QtPy==1.9.0
 OCC==0.0.2.dev20190912195130
 PyQt5==5.15.4
-tpaviot/pythonocc
+pythonocc-core
