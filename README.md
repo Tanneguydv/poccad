@@ -1,2 +1,2 @@
 # poccad
-a simple pyqt5 visualization tool for pythonocc
+a simple pyqt5 modelisation/visualization didactic tool for pythonocc
