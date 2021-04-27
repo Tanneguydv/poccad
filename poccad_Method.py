@@ -47,22 +47,26 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionQuit.triggered.connect(self.quit)
 
         self.ui.actionBox.triggered.connect(self.makebox)
-        self.box = False
         self.ui.actionSphere.triggered.connect(self.makesphere)
-        self.sphere = False
         self.ui.actionPoint.triggered.connect(self.makepoint)
-        self.point = False
         self.ui.actionCut.triggered.connect(self.boolcut)
-        self.cut = False
         self.ui.actionTranslate.triggered.connect(self.translate)
-        self.translate = False
         self.ui.actionStep.triggered.connect(self.exportstep)
-        self.expstep = False
+
 
         self.changeviewval = 0
         self.render = False
 
+        self.initialize()
         self.ui.OCCedit.setPlainText('#Auto append for render :\n#display = self.display\n#display.FitAll()' )
+
+    def initialize(self):
+        self.box = False
+        self.sphere = False
+        self.point = False
+        self.cut = False
+        self.translate = False
+        self.expstep = False
 
     def makebox(self):
         if self.box == False :
@@ -115,12 +119,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def new_file(self):
         self.ui.OCCedit.clear()
         self.display.EraseAll()
-        self.box = False
-        self.sphere = False
-        self.point = False
-        self.cut = False
-        self.translate = False
-        self.expstep = False
+        self.initialize()
 
     def open_file(self):
         print('open')
