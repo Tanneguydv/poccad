@@ -16,7 +16,7 @@ File are named `*.occ`
 I guess the code need a lot clean-up as I'm new to all this, hope it would be useful to anybody.
 
 
-**open a demo file :**
+**Open a demo file :**
 
 ![open_demofile](https://user-images.githubusercontent.com/81742654/116223455-d142c100-a74f-11eb-9cbd-a9ddde39b921.gif)
 
@@ -26,6 +26,6 @@ I guess the code need a lot clean-up as I'm new to all this, hope it would be us
 ![box_translate](https://user-images.githubusercontent.com/81742654/116221251-ba9b6a80-a74d-11eb-9f03-617ff6b7eb32.gif)
 
 
-**translate a box and change view to Top :**
+**Translate a box and change view to Top :**
 
 ![bool](https://user-images.githubusercontent.com/81742654/116221241-b707e380-a74d-11eb-99eb-52c486927c29.gif)
