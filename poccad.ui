@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
+ <author>##Author github user @Tanneguydv, 2021</author>
  <class>poccad</class>
  <widget class="QMainWindow" name="poccad">
   <property name="geometry">
