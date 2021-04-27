@@ -14,18 +14,19 @@ display.DisplayShape(box)\n'
 def make_sphere(arg):
     if arg == 'imp':
         return  'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere\n\
+from OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n\
 from math import atan, cos, sin, pi\n\
 sphere_radius = 30.0\n\
 sphere_angle = atan(2)\n\
-sphere_origin = i.gp_Ax2(i.gp_Pnt(0, 0, 0), i.gp_Dir(0, 0, 1))\n\
-sphere = i.BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()\n\
+sphere_origin = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))\n\
+sphere = BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()\n\
 display.DisplayShape(sphere)\n'
 
     else:
         return  'sphere_radius = 30.0\n\
 sphere_angle = atan(2)\n\
-sphere_origin = i.gp_Ax2(i.gp_Pnt(0, 0, 0), i.gp_Dir(0, 0, 1))\n\
-sphere = i.BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()\n\
+sphere_origin = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))\n\
+sphere = BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()\n\
 display.DisplayShape(sphere)\n'
 
 def make_point(arg):
