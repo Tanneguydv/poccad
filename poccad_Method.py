@@ -47,6 +47,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionQuit.triggered.connect(self.quit)
+        self.ui.actionInfo.triggered.connect(self.dialog_info)
 
         self.ui.actionBox.triggered.connect(self.makebox)
         self.ui.actionSphere.triggered.connect(self.makesphere)
@@ -170,6 +171,32 @@ class Application(PyQt5.QtWidgets.QMainWindow):
             cfe.write('\ndisplay.FitAll()')
         exec(open("cad_file_edit.occ").read())
         self.render = True
+
+    def dialog_info(self):
+        infobox = QtWidgets.QDialog()
+        infobox.setObjectName("infobox")
+        infobox.resize(671, 379)
+        icon = QtGui.QIcon()
+        icon.addPixmap(QtGui.QPixmap("ui_files/icons/poccad.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
+        infobox.setWindowIcon(icon)
+        self.logo = QtWidgets.QLabel(infobox)
+        self.logo.setGeometry(QtCore.QRect(20, 10, 631, 311))
+        self.logo.setText("")
+        self.logo.setPixmap(QtGui.QPixmap("readme_files/poccad_github.png"))
+        self.logo.setScaledContents(True)
+        self.logo.setObjectName("logo")
+        self.infotext = QtWidgets.QLabel(infobox)
+        self.infotext.setGeometry(QtCore.QRect(190, 340, 291, 16))
+        self.infotext.setAutoFillBackground(True)
+        self.infotext.setScaledContents(False)
+        self.infotext.setOpenExternalLinks(True)
+        self.infotext.setTextInteractionFlags(QtCore.Qt.LinksAccessibleByMouse | QtCore.Qt.TextSelectableByMouse)
+        self.infotext.setObjectName("infotext")
+        QtCore.QMetaObject.connectSlotsByName(infobox)
+        _translate = QtCore.QCoreApplication.translate
+        infobox.setWindowTitle(_translate("infobox", "poccad_info"))
+        self.infotext.setText(_translate("infobox", "please visit https://github.com/Tanneguydv/poccad"))
+        infobox.exec_()
 
     def quit(self):
         if os.path.isfile("cad_file_edit.occ"):
