@@ -1,3 +1,5 @@
+##Author github user @Tanneguydv, 2021
+
 import sys
 
 from qtpy import QtWidgets
