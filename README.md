@@ -20,11 +20,11 @@ I guess the code need a lot clean-up as I'm new to all this, hope it would be us
 
 ![open_demo](https://user-images.githubusercontent.com/81742654/116221204-afe0d580-a74d-11eb-9d8a-fcb54677230e.gif)
 
-**Boolean cut :**
+**Boolean cut and export result as filename.step :**
 
 ![box_translate](https://user-images.githubusercontent.com/81742654/116221251-ba9b6a80-a74d-11eb-9f03-617ff6b7eb32.gif)
 
 
-**translate a box :**
+**translate a box and change view to Top :**
 
 ![bool](https://user-images.githubusercontent.com/81742654/116221241-b707e380-a74d-11eb-99eb-52c486927c29.gif)
