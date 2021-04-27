@@ -18,7 +18,8 @@ I guess the code need a lot clean-up as I'm new to all this, hope it would be us
 
 **open a demo file :**
 
-![open_demo](https://user-images.githubusercontent.com/81742654/116221204-afe0d580-a74d-11eb-9d8a-fcb54677230e.gif)
+![open_demofile](https://user-images.githubusercontent.com/81742654/116223455-d142c100-a74f-11eb-9cbd-a9ddde39b921.gif)
+
 
 **Boolean cut and export result as filename.step :**
 
