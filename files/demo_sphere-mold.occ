@@ -1,19 +1,25 @@
+from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox , BRepPrimAPI_MakeSphere
+from OCC.Core.gp import gp_Vec, gp_Trsf , gp_Ax2 , gp_Dir , gp_Pnt
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_Transform
+from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Cut
+from OCC.Core.Graphic3d import Graphic3d_NOM_STEEL
 from math import atan, cos, sin, pi
+
 sphere_radius = 30.0
 sphere_angle = atan(2)
-sphere_origin = i.gp_Ax2(i.gp_Pnt(0, 0, 0), i.gp_Dir(0, 0, 1))
-sphere = i.BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()
-box = i.BRepPrimAPI_MakeBox(30, 60, 60).Shape()
-trns = i.gp_Trsf()
-trns.SetTranslation(i.gp_Vec(-30, -30, -30))
-mold_basis = i.BRepBuilderAPI_Transform(box, trns).Shape()
+sphere_origin = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))
+sphere = BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()
+box = BRepPrimAPI_MakeBox(30, 60, 60).Shape()
+trns = gp_Trsf()
+trns.SetTranslation(gp_Vec(-30, -30, -30))
+mold_basis = BRepBuilderAPI_Transform(box, trns).Shape()
 display.DisplayShape(mold_basis, update=True)
-mold = i.BRepAlgoAPI_Cut(mold_basis, sphere).Shape()
+mold = BRepAlgoAPI_Cut(mold_basis, sphere).Shape()
 display.EraseAll()
-display.DisplayShape(mold, update=True, material=i.Graphic3d_NOM_STEEL)
+display.DisplayShape(mold, update=True, material=Graphic3d_NOM_STEEL)
 
 sphere2_radius = 3.0
 sphere2_angle = atan(2)
-sphere2_origin = i.gp_Ax2(i.gp_Pnt(0, 0, 0), i.gp_Dir(0, 0, 1))
-sphere2 = i.BRepPrimAPI_MakeSphere(sphere2_origin, sphere2_radius, -sphere2_angle, sphere2_angle).Shape()
+sphere2_origin = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))
+sphere2 = BRepPrimAPI_MakeSphere(sphere2_origin, sphere2_radius, -sphere2_angle, sphere2_angle).Shape()
 display.DisplayShape(sphere2)
