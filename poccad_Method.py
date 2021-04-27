@@ -115,6 +115,12 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def new_file(self):
         self.ui.OCCedit.clear()
         self.display.EraseAll()
+        self.box = False
+        self.sphere = False
+        self.point = False
+        self.cut = False
+        self.translate = False
+        self.expstep = False
 
     def open_file(self):
         print('open')
