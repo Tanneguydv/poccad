@@ -46,6 +46,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionNew.triggered.connect(self.new_file)
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
+        self.ui.actionSave_as.triggered.connect(self.save_file_as)
         self.ui.actionQuit.triggered.connect(self.quit)
         self.ui.actionInfo.triggered.connect(self.dialog_info)
 
@@ -70,6 +71,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.cut = False
         self.translate = False
         self.expstep = False
+        self.filesaved = False
 
     def makebox(self):
         if self.box == False :
@@ -127,22 +129,43 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def open_file(self):
         print('open')
         self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File')
-        print(self.occ_file_path)
-        self.ui.OCCedit.clear()
-        with open (self.occ_file_path, "r") as opened_file:
-            for line in opened_file:
-                if line == "\n" :
-                    pass
-                else :
-                    self.ui.OCCedit.appendPlainText(line.strip('\n'))
-        
+        if self.occ_file_path:
+            print(self.occ_file_path)
+            self.ui.OCCedit.clear()
+            with open (self.occ_file_path, "r") as opened_file:
+                for line in opened_file:
+                    if line == "\n" :
+                        pass
+                    else :
+                        self.ui.OCCedit.appendPlainText(line.strip('\n'))
+        else :
+            pass
+
     def save_file(self):
-        print('save')
-        text, ok = QInputDialog.getText(self, 'Save file', 'Name of the file?')
-        if ok:
-            saved_file = (str(text)+'.occ')
+        if self.filesaved == False :
+            self.save_file_as()
+        else :
+            self.saved_file = (str(self.fileName)+'.occ')
             cad_edit = self.ui.OCCedit.toPlainText()
-            with open (saved_file, "a") as cfe :
+            with open (self.saved_file, "w") as cfe :
+                for line in cad_edit:
+                    if line.startswith("display = self.display"):
+                        pass
+                    if line.startswith('display.FitAll()'):
+                        pass
+                    else:
+                        cfe.writelines(line)
+
+    def save_file_as(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;occ Files (*.occ)", options=options)
+        if self.fileName:
+            self.filesaved = True
+            print(self.fileName)
+            self.saved_file = (str(self.fileName)+'.occ')
+            cad_edit = self.ui.OCCedit.toPlainText()
+            with open (self.saved_file, "w") as cfe :
                 for line in cad_edit:
                     if line.startswith("display = self.display"):
                         pass
@@ -169,8 +192,24 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                 else :
                     cfe.writelines(line)
             cfe.write('\ndisplay.FitAll()')
-        exec(open("cad_file_edit.occ").read())
-        self.render = True
+
+        if self.ui.actiondevmode.isChecked():
+            exec(open("cad_file_edit.occ").read())
+            self.render = True
+        else :
+            try :
+                exec(open("cad_file_edit.occ").read())
+                self.render = True
+            except SyntaxError :
+                self.ui.log.appendPlainText('Syntax error')
+            except KeyError :
+                self.ui.log.appendPlainText('Key error')
+            except TypeError:
+                self.ui.log.appendPlainText('Type error')
+            except NameError:
+                self.ui.log.appendPlainText('Name error')
+            except IndentationError:
+                self.ui.log.appendPlainText('Indentation error')
 
     def dialog_info(self):
         infobox = QtWidgets.QDialog()
