@@ -3,6 +3,8 @@
 import os
 import os.path
 import sys
+from io import StringIO
+import contextlib
 import time
 import PyQt5
 from qtpy import QtWidgets, QtGui, QtCore
@@ -194,11 +196,35 @@ class Application(PyQt5.QtWidgets.QMainWindow):
             cfe.write('\ndisplay.FitAll()')
 
         if self.ui.actiondevmode.isChecked():
-            exec(open("cad_file_edit.occ").read())
             self.render = True
+
+            @contextlib.contextmanager
+            def stdoutIO(stdout=None):
+                old = sys.stdout
+                if stdout is None:
+                    stdout = StringIO()
+                sys.stdout = stdout
+                yield stdout
+                sys.stdout = old
+
+            with stdoutIO() as s:
+                exec(open("cad_file_edit.occ").read())
+            self.ui.log.appendPlainText(str(s.getvalue()))
+
         else :
             try :
-                exec(open("cad_file_edit.occ").read())
+                @contextlib.contextmanager
+                def stdoutIO(stdout=None):
+                    old = sys.stdout
+                    if stdout is None:
+                        stdout = StringIO()
+                    sys.stdout = stdout
+                    yield stdout
+                    sys.stdout = old
+
+                with stdoutIO() as s:
+                    exec(open("cad_file_edit.occ").read())
+                self.ui.log.appendPlainText(str(s.getvalue()))
                 self.render = True
             except SyntaxError :
                 self.ui.log.appendPlainText('Syntax error')
