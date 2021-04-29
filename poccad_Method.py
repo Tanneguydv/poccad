@@ -65,7 +65,10 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.render = False
 
         self.initialize()
-        self.ui.OCCedit.setPlainText('#Auto append for render :\n#display = self.display\n#display.FitAll()' )
+        self.ui.OCCedit.setPlainText('from OCC.Extend.DataExchange import read_step_file\n\
+block_cylinder_shape = read_step_file("files\cylinder_block.stp")\n\
+display.DisplayShape(block_cylinder_shape, update=True)' )
+        self.ui.output.appendPlainText('Press F5 to display the Pythonocc-demo step file')
         self.ui.OCCedit.textChanged.connect(self.changetext)
 
         self.ui.treeWidget.customContextMenuRequested.connect(self.on_contextmenu_tree)
