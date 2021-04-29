@@ -192,6 +192,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.output.appendPlainText('new codesheet')
 
     def open_file(self):
+        self.initialize()
         self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File')
         if self.occ_file_path:
             self.ui.output.appendPlainText('open ' + str(self.occ_file_path))
