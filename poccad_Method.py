@@ -61,7 +61,6 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionTranslate.triggered.connect(self.translate)
         self.ui.actionStep.triggered.connect(self.exportstep)
 
-
         self.changeviewval = 0
         self.render = False
 
@@ -69,10 +68,16 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.OCCedit.setPlainText('#Auto append for render :\n#display = self.display\n#display.FitAll()' )
         self.ui.OCCedit.textChanged.connect(self.changetext)
 
+        self.ui.treeWidget.customContextMenuRequested.connect(self.on_contextmenu_tree)
+        self.popTreeMenu = QtWidgets.QMenu(self)
+        self.popTreeMenu.addAction("double click to display in 'Consult' Tab")
+
         self.cwd = os.getcwd()
         self.load_project_structure(self.cwd, self.ui.treeWidget)
-
         self.ui.treeWidget.itemDoubleClicked.connect(self.show_consult)
+
+    def on_contextmenu_tree(self, point):
+        self.popTreeMenu.exec_(self.ui.treeWidget.mapToGlobal(point))
 
     def show_consult(self, item):
 
@@ -80,6 +85,12 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         dir =  ([node.text(0) for node in self.getParents(item)])
         length = len(dir)
         if dir :
+            if length == 4 :
+                print(str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
+                consult_file = str(dir[1])+ '\\' + str(dir[0]) +'\\' + str(file)
+            if length == 3 :
+                print(str(dir[2])+ '\\' +str(dir[1])+ '\\' +str(dir[0]) + '\\'+ str(file))
+                consult_file = str(dir[0]) +'\\' + str(file)
             if length == 2 :
                 print(str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
                 consult_file = str(dir[1])+ '\\' + str(dir[0]) +'\\' + str(file)
@@ -92,11 +103,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.Consult.clear()
         with open (consult_file , 'r') as cf:
             for line in cf :
-                if line == "\n":
-                    pass
-                else:
-                    self.ui.Consult.appendPlainText(line)
-
+                self.ui.Consult.appendPlainText(line.strip('\n'))
 
     def getParents(self, item):
         """
@@ -127,6 +134,8 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def changetext(self):
         if self.ui.OCCedit.toPlainText().endswith(':\n'):
             self.ui.OCCedit.insertPlainText('\t')
+        if self.ui.OCCedit.toPlainText().endswith('='):
+            print ('variable')
 
     def initialize(self):
         self.box = False
@@ -136,48 +145,6 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.translate = False
         self.expstep = False
         self.file_issaved = False
-
-    def makebox(self):
-        if self.box == False :
-            self.ui.OCCedit.appendPlainText(sc.make_box("imp"))
-            self.box = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.make_box(''))
-
-    def makesphere(self):
-        if self.sphere == False :
-            self.ui.OCCedit.appendPlainText(sc.make_sphere("imp"))
-            self.sphere = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.make_sphere(''))
-
-    def makepoint(self):
-        if self.point == False :
-            self.ui.OCCedit.appendPlainText(sc.make_point("imp"))
-            self.point = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.make_point(''))
-
-    def boolcut(self):
-        if self.cut == False :
-            self.ui.OCCedit.appendPlainText(sc.bool_cut("imp"))
-            self.cut = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.bool_cut(''))
-
-    def translate(self):
-        if self.translate == False :
-            self.ui.OCCedit.appendPlainText(sc.translate("imp"))
-            self.translate = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.translate(''))
-
-    def exportstep(self):
-        if self.expstep == False :
-            self.ui.OCCedit.appendPlainText(sc.export_step("imp"))
-            self.expstep = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.export_step(''))
 
     def setview(self, view):
         self.ui.activeview.setPixmap(QPixmap('ui_files\icons\\'+ (view) + '_on.png'))
@@ -201,10 +168,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
             self.ui.OCCedit.clear()
             with open (self.occ_file_path, "r") as opened_file:
                 for line in opened_file:
-                    if line == "\n" :
-                        pass
-                    else :
-                        self.ui.OCCedit.appendPlainText(line.strip('\n'))
+                    self.ui.OCCedit.appendPlainText(line.strip('\n'))
         else :
             pass
 
@@ -260,9 +224,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                     cfe.writelines(line)
             cfe.write('\ndisplay.FitAll()')
 
-        if self.ui.actiondevmode.isChecked():
-            self.render = True
-
+        try :
             @contextlib.contextmanager
             def stdoutIO(stdout=None):
                 old = sys.stdout
@@ -275,25 +237,9 @@ class Application(PyQt5.QtWidgets.QMainWindow):
             with stdoutIO() as s:
                 exec(open("cad_file_edit.occ").read())
             self.ui.output.appendPlainText(str(s.getvalue()))
-
-        else :
-            try :
-                @contextlib.contextmanager
-                def stdoutIO(stdout=None):
-                    old = sys.stdout
-                    if stdout is None:
-                        stdout = StringIO()
-                    sys.stdout = stdout
-                    yield stdout
-                    sys.stdout = old
-
-                with stdoutIO() as s:
-                    exec(open("cad_file_edit.occ").read())
-                self.ui.output.appendPlainText(str(s.getvalue()))
-                self.render = True
-            except Exception :
-                self.ui.output.appendPlainText(str(traceback.format_exc()))
-
+            self.render = True
+        except Exception :
+            self.ui.output.appendPlainText(str(traceback.format_exc()))
 
     def dialog_about(self):
         infobox = QtWidgets.QDialog()
@@ -325,3 +271,57 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         if os.path.isfile("cad_file_edit.occ"):
             os.remove("cad_file_edit.occ")
         sys.exit()
+
+    #PythonOCC functions :
+    #Shape
+
+    def makebox(self):
+        if self.box == False :
+            self.ui.OCCedit.appendPlainText(sc.make_box("imp"))
+            self.box = True
+        else :
+            self.ui.OCCedit.appendPlainText(sc.make_box(''))
+
+    def makesphere(self):
+        if self.sphere == False :
+            self.ui.OCCedit.appendPlainText(sc.make_sphere("imp"))
+            self.sphere = True
+        else :
+            self.ui.OCCedit.appendPlainText(sc.make_sphere(''))
+
+    #Boolean
+
+    def boolcut(self):
+        if self.cut == False :
+            self.ui.OCCedit.appendPlainText(sc.bool_cut("imp"))
+            self.cut = True
+        else :
+            self.ui.OCCedit.appendPlainText(sc.bool_cut(''))
+
+    #Transformations
+
+    def translate(self):
+        if self.translate == False :
+            self.ui.OCCedit.appendPlainText(sc.translate("imp"))
+            self.translate = True
+        else :
+            self.ui.OCCedit.appendPlainText(sc.translate(''))
+
+    #Constrution
+
+    def makepoint(self):
+        if self.point == False :
+            self.ui.OCCedit.appendPlainText(sc.make_point("imp"))
+            self.point = True
+        else :
+            self.ui.OCCedit.appendPlainText(sc.make_point(''))
+
+    #Exchange
+
+    def exportstep(self):
+        if self.expstep == False :
+            self.ui.OCCedit.appendPlainText(sc.export_step("imp"))
+            self.expstep = True
+        else :
+            self.ui.OCCedit.appendPlainText(sc.export_step(''))
+
