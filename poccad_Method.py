@@ -5,11 +5,13 @@ import os.path
 import sys
 from io import StringIO
 import contextlib
+import traceback
 import time
 import PyQt5
 from qtpy import QtWidgets, QtGui, QtCore
 from PyQt5.QtGui import *
-from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, QInputDialog, QFileDialog
+from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, \
+    QInputDialog, QFileDialog, QTreeWidgetItem
 
 from OCC.Display.backend import load_backend
 load_backend('qt-pyqt5')
@@ -50,7 +52,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSave_as.triggered.connect(self.save_file_as)
         self.ui.actionQuit.triggered.connect(self.quit)
-        self.ui.actionInfo.triggered.connect(self.dialog_info)
+        self.ui.actionAbout.triggered.connect(self.dialog_about)
 
         self.ui.actionBox.triggered.connect(self.makebox)
         self.ui.actionSphere.triggered.connect(self.makesphere)
@@ -65,6 +67,66 @@ class Application(PyQt5.QtWidgets.QMainWindow):
 
         self.initialize()
         self.ui.OCCedit.setPlainText('#Auto append for render :\n#display = self.display\n#display.FitAll()' )
+        self.ui.OCCedit.textChanged.connect(self.changetext)
+
+        self.cwd = os.getcwd()
+        self.load_project_structure(self.cwd, self.ui.treeWidget)
+
+        self.ui.treeWidget.itemDoubleClicked.connect(self.show_consult)
+
+    def show_consult(self, item):
+
+        file = item.text(0)
+        dir =  ([node.text(0) for node in self.getParents(item)])
+        length = len(dir)
+        if dir :
+            if length == 2 :
+                print(str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
+                consult_file = str(dir[1])+ '\\' + str(dir[0]) +'\\' + str(file)
+            if length == 1 :
+                print(str(dir[0]) + '\\'+ str(file))
+                consult_file = str(dir[0]) +'\\' + str(file)
+        else :
+            print (str(file))
+            consult_file = (str(file))
+        self.ui.Consult.clear()
+        with open (consult_file , 'r') as cf:
+            for line in cf :
+                if line == "\n":
+                    pass
+                else:
+                    self.ui.Consult.appendPlainText(line)
+
+
+    def getParents(self, item):
+        """
+        Return a list containing all parent items of this item.
+        The list is empty, if the item is a root item.
+        """
+        parents = []
+        current_item = item
+        current_parent = current_item.parent()
+
+        # Walk up the tree and collect all parent items of this item
+        while not current_parent is None:
+            parents.append(current_parent)
+            current_item = current_parent
+            current_parent = current_item.parent()
+        return parents
+
+    def load_project_structure(self, startpath, tree):
+        for element in os.listdir(startpath):
+            path_info = startpath + "/" + element
+            parent_itm = QTreeWidgetItem(tree, [os.path.basename(element)])
+            if os.path.isdir(path_info):
+                self.load_project_structure(path_info, parent_itm)
+                parent_itm.setIcon(0, QIcon('ui_files\icons\dir.png'))
+            else:
+                parent_itm.setIcon(0, QIcon('ui_files\icons\\file.png'))
+
+    def changetext(self):
+        if self.ui.OCCedit.toPlainText().endswith(':\n'):
+            self.ui.OCCedit.insertPlainText('\t')
 
     def initialize(self):
         self.box = False
@@ -73,7 +135,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.cut = False
         self.translate = False
         self.expstep = False
-        self.filesaved = False
+        self.file_issaved = False
 
     def makebox(self):
         if self.box == False :
@@ -127,12 +189,14 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.OCCedit.clear()
         self.display.EraseAll()
         self.initialize()
+        self.ui.output.appendPlainText('new codesheet')
 
     def open_file(self):
-        print('open')
         self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File')
         if self.occ_file_path:
-            print(self.occ_file_path)
+            self.ui.output.appendPlainText('open ' + str(self.occ_file_path))
+            self.file_issaved = True
+            self.saved_file = (str(self.occ_file_path))
             self.ui.OCCedit.clear()
             with open (self.occ_file_path, "r") as opened_file:
                 for line in opened_file:
@@ -144,11 +208,11 @@ class Application(PyQt5.QtWidgets.QMainWindow):
             pass
 
     def save_file(self):
-        if self.filesaved == False :
+        if self.file_issaved == False :
             self.save_file_as()
         else :
-            self.saved_file = (str(self.fileName)+'.occ')
             cad_edit = self.ui.OCCedit.toPlainText()
+            self.ui.output.appendPlainText('saving ' + str(self.saved_file))
             with open (self.saved_file, "w") as cfe :
                 for line in cad_edit:
                     if line.startswith("display = self.display"):
@@ -163,9 +227,9 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         options |= QFileDialog.DontUseNativeDialog
         self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;occ Files (*.occ)", options=options)
         if self.fileName:
-            self.filesaved = True
-            print(self.fileName)
+            self.file_issaved = True
             self.saved_file = (str(self.fileName)+'.occ')
+            self.ui.output.appendPlainText('saving ' + str(self.saved_file))
             cad_edit = self.ui.OCCedit.toPlainText()
             with open (self.saved_file, "w") as cfe :
                 for line in cad_edit:
@@ -209,7 +273,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
 
             with stdoutIO() as s:
                 exec(open("cad_file_edit.occ").read())
-            self.ui.log.appendPlainText(str(s.getvalue()))
+            self.ui.output.appendPlainText(str(s.getvalue()))
 
         else :
             try :
@@ -224,20 +288,13 @@ class Application(PyQt5.QtWidgets.QMainWindow):
 
                 with stdoutIO() as s:
                     exec(open("cad_file_edit.occ").read())
-                self.ui.log.appendPlainText(str(s.getvalue()))
+                self.ui.output.appendPlainText(str(s.getvalue()))
                 self.render = True
-            except SyntaxError :
-                self.ui.log.appendPlainText('Syntax error')
-            except KeyError :
-                self.ui.log.appendPlainText('Key error')
-            except TypeError:
-                self.ui.log.appendPlainText('Type error')
-            except NameError:
-                self.ui.log.appendPlainText('Name error')
-            except IndentationError:
-                self.ui.log.appendPlainText('Indentation error')
+            except Exception :
+                self.ui.output.appendPlainText(str(traceback.format_exc()))
 
-    def dialog_info(self):
+
+    def dialog_about(self):
         infobox = QtWidgets.QDialog()
         infobox.setObjectName("infobox")
         infobox.resize(671, 379)
