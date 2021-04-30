@@ -10,8 +10,9 @@ import time
 import PyQt5
 from qtpy import QtWidgets, QtGui, QtCore
 from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGroupBox, QDialog, QVBoxLayout, \
-    QInputDialog, QFileDialog, QTreeWidgetItem
+    QInputDialog, QFileDialog, QTreeWidgetItem, QTreeWidgetItemIterator
 
 from OCC.Display.backend import load_backend
 load_backend('qt-pyqt5')
@@ -19,6 +20,7 @@ load_backend('qt-pyqt5')
 import OCC.Display.qtDisplay as qtDisplay
 
 import lib.Scripts as sc
+from lib.Scripts import Shape, Construction
 from poccad import Ui_poccad
 
 
@@ -59,7 +61,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionPoint.triggered.connect(self.makepoint)
         self.ui.actionCut.triggered.connect(self.boolcut)
         self.ui.actionTranslate.triggered.connect(self.translate)
-        self.ui.actionStep.triggered.connect(self.exportstep)
+        self.ui.actionExportstep.triggered.connect(self.exportstep)
 
         self.changeviewval = 0
         self.render = False
@@ -78,6 +80,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         self.cwd = os.getcwd()
         self.load_project_structure(self.cwd, self.ui.treeWidget)
         self.ui.treeWidget.itemDoubleClicked.connect(self.show_consult)
+        self.ui.treelayers.itemDoubleClicked.connect(self.change_layer_state)
 
     def on_contextmenu_tree(self, point):
         self.popTreeMenu.exec_(self.ui.treeWidget.mapToGlobal(point))
@@ -212,6 +215,15 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         
     def render_file(self):
         print('render')
+        iterator = QTreeWidgetItemIterator(self.ui.treelayers, QTreeWidgetItemIterator.All)
+        while iterator.value():
+            iterator.value().takeChildren()
+            iterator += 1
+        i = self.ui.treelayers.topLevelItemCount()
+        while i > -1:
+            self.ui.treelayers.takeTopLevelItem(i)
+            i -= 1
+
         if os.path.isfile("cad_file_edit.occ"):
             os.remove("cad_file_edit.occ")
         self.display.EraseAll()
@@ -226,6 +238,21 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                 else :
                     cfe.writelines(line)
             cfe.write('\ndisplay.FitAll()')
+
+        with open ("cad_file_edit.occ", "r") as cfe :
+            lines = cfe.readlines()
+            for line in lines:
+                if 'display.DisplaySha' in line :
+                    layer = line.split('=', 1)
+                    layername = layer[0]
+                    self.load_tree_layers(layername, 'on')
+                    print(layername)
+                if 'display.Context.Era' in line :
+                    layer1 = line.split('display.Context.Erase(', 1)
+                    layer2 = layer1[1].split(', True)', 1)
+                    layername = layer2[0]
+                    self.load_tree_layers(layername, 'off')
+                    print(layername)
 
         try :
             @contextlib.contextmanager
@@ -275,15 +302,80 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
             os.remove("cad_file_edit.occ")
         sys.exit()
 
+    #LAYERS
+
+    def load_tree_layers(self, layername, state):
+        displaylayer = QTreeWidgetItem(self.ui.treelayers, [layername])
+        if state == 'on':
+            if 'Shape' in layername :
+                displaylayer.setCheckState(0, Qt.Checked)
+                displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_on.png'))
+            if 'Construction' in layername:
+                displaylayer.setCheckState(0, Qt.Checked)
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+        if state == 'off':
+            item = QTreeWidgetItem(self.ui.treelayers,[layername])
+            self.ui.treelayers.takeTopLevelItem(self.ui.treelayers.indexOfTopLevelItem(item))
+            displaylayer = QTreeWidgetItem(self.ui.treelayers, [layername])
+            if 'Shape' in layername:
+                displaylayer.setCheckState(0, Qt.Unchecked)
+                displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
+                self.ui.OCCedit.appendPlainText("display.Context.Erase("+str(layername)+", True)")
+            if 'Construction' in layername:
+                displaylayer.setCheckState(0, Qt.Unchecked)
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+
+    def change_layer_state(self, item):#TODO
+        print (item)
+        layer = item.text(0)
+        self.ui.treelayers.takeTopLevelItem(self.ui.treelayers.indexOfTopLevelItem(item))
+        displaylayer = QTreeWidgetItem(self.ui.treelayers, [layer])
+
+        if 'Shape' in layer :
+            displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
+            self.ui.OCCedit.appendPlainText('display.Context.Erase(' + (str(layer) + ', True)'))
+            self.render_file()
+
     #PythonOCC functions :
     #Shape
 
     def makebox(self):
-        if self.box == False :
-            self.ui.OCCedit.appendPlainText(sc.make_box("imp"))
-            self.box = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.make_box(''))
+        self.makingbox = True
+        self.ui.output.appendPlainText('make box method : name;point;x,y,z')
+        self.ui.entryline.setFocus()
+        def send_param():
+            self.ui.output.appendPlainText(self.ui.entryline.text())
+            if self.makingbox == True :
+                try :
+                    if self.ui.entryline.text() == '' :
+                        name = 'box'
+                        point = 'gp_Pnt()'
+                        settings = '10,10,10'
+                    else :
+                        boxparam = self.ui.entryline.text().split(';', 2)
+                        name = boxparam[0]
+                        if name == '':
+                            name = 'box'
+                        point = boxparam[1]
+                        if point == '':
+                            point = 'gp_Pnt()'
+                        settings = boxparam[2]
+                        if settings == '':
+                            settings = '10,10,10'
+                    if self.box == False :
+                        self.ui.OCCedit.appendPlainText('from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox\nfrom OCC.Core.gp import gp_Pnt')
+                        self.ui.OCCedit.appendPlainText(Shape.make_box(name, point, settings))
+                        self.box = True
+                    else :
+                        self.ui.OCCedit.appendPlainText(Shape.make_box(name, point, settings))
+                    self.ui.entryline.clear()
+                    self.render_file()
+                    self.ui.output.appendPlainText('Rendering file...')
+                    self.ui.OCCedit.setFocus()
+                    self.makingbox = False
+                except Exception as e :
+                    self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
+        self.ui.entryline.returnPressed.connect(send_param)
 
     def makesphere(self):
         if self.sphere == False :
@@ -313,11 +405,37 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
     #Constrution
 
     def makepoint(self):
-        if self.point == False :
-            self.ui.OCCedit.appendPlainText(sc.make_point("imp"))
-            self.point = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.make_point(''))
+        self.makingpoint = True
+        self.ui.output.appendPlainText('make point method : name;x,y,z')
+        self.ui.entryline.setFocus()
+        def send_param():
+            if self.makingpoint == True :
+                try :
+                    if self.ui.entryline.text() == '' :
+                        name = 'point'
+                        settings = '0,0,0'
+                    else :
+                        pointparam = self.ui.entryline.text().split(';', 1)
+                        name = pointparam[0]
+                        if name == '':
+                            name = 'point'
+                        settings = pointparam[1]
+                        if settings == '':
+                            settings = '0,0,0'
+                    if self.point == False :
+                        self.ui.OCCedit.appendPlainText('from OCC.Core.gp import gp_Pnt\n')
+                        self.ui.OCCedit.appendPlainText(Construction.make_point(name, settings))
+                        self.point = True
+                    else :
+                        self.ui.OCCedit.appendPlainText(Construction.make_point(name, settings))
+                    self.ui.entryline.clear()
+                    self.render_file()
+                    self.ui.output.appendPlainText('Rendering file...')
+                    self.ui.OCCedit.setFocus()
+                    self.makingpoint = False
+                except Exception as e:
+                    self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
+        self.ui.entryline.returnPressed.connect(send_param)
 
     #Exchange
 

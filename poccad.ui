@@ -39,7 +39,7 @@
            <enum>Qt::Horizontal</enum>
           </property>
           <widget class="QWidget" name="gridLayoutWidget">
-           <layout class="QHBoxLayout" name="horizontalLayout_5">
+           <layout class="QVBoxLayout" name="verticalLayout_2">
             <item>
              <widget class="QPlainTextEdit" name="output">
               <property name="sizePolicy">
@@ -193,9 +193,12 @@ font: 9pt &quot;Consolas&quot;;</string>
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QLineEdit" name="entryline"/>
+            </item>
            </layout>
           </widget>
-          <widget class="QWidget" name="">
+          <widget class="QWidget" name="layoutWidget">
            <layout class="QVBoxLayout" name="verticalLayout">
             <item>
              <layout class="QGridLayout" name="gridLayout_2">
@@ -351,6 +354,11 @@ font: 9pt &quot;Consolas&quot;;</string>
               <property name="headerHidden">
                <bool>true</bool>
               </property>
+              <column>
+               <property name="text">
+                <string notr="true">1</string>
+               </property>
+              </column>
              </widget>
             </item>
            </layout>
@@ -444,6 +452,32 @@ font: 9pt &quot;Consolas&quot;;</string>
                 </item>
                </layout>
               </widget>
+              <widget class="QWidget" name="tab">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
+               <attribute name="title">
+                <string>Layers</string>
+               </attribute>
+               <layout class="QHBoxLayout" name="horizontalLayout_5">
+                <item>
+                 <widget class="QTreeWidget" name="treelayers">
+                  <property name="sizePolicy">
+                   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+                    <horstretch>0</horstretch>
+                    <verstretch>0</verstretch>
+                   </sizepolicy>
+                  </property>
+                  <property name="headerHidden">
+                   <bool>true</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </widget>
              </widget>
             </item>
            </layout>
@@ -505,7 +539,6 @@ font: 9pt &quot;Consolas&quot;;</string>
     <addaction name="actionBox"/>
     <addaction name="actionSphere"/>
     <addaction name="actionRead_Step"/>
-    <addaction name="actionPoint"/>
    </widget>
    <widget class="QMenu" name="menuBoolean">
     <property name="title">
@@ -523,13 +556,14 @@ font: 9pt &quot;Consolas&quot;;</string>
     <property name="title">
      <string>Construction</string>
     </property>
+    <addaction name="actionPoint"/>
     <addaction name="actionVector"/>
    </widget>
    <widget class="QMenu" name="menuExport">
     <property name="title">
      <string>Export</string>
     </property>
-    <addaction name="actionStep"/>
+    <addaction name="actionExportstep"/>
    </widget>
    <widget class="QMenu" name="menuHelp">
     <property name="title">
@@ -605,9 +639,9 @@ font: 9pt &quot;Consolas&quot;;</string>
     <string>Translate</string>
    </property>
   </action>
-  <action name="actionStep">
+  <action name="actionExportstep">
    <property name="text">
-    <string>Step</string>
+    <string>Export step</string>
    </property>
   </action>
   <action name="actionNew">
