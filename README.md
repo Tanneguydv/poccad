@@ -19,7 +19,11 @@ Requires : https://github.com/tpaviot/pythonocc-core and PyQt5
 
 Execute `poccad_launcher.py` to get started
 
+**new ui design and functions, readme update coming soon**
 
+![20210430_new-ui](https://user-images.githubusercontent.com/81742654/116717430-29402880-a9d9-11eb-8fe0-323d050dfb1e.jpg)
+
+# ex ui example :
 
 **Open a demo file :**
 
