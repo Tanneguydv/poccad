@@ -1,15 +1,11 @@
 #---------------------
 #SHAPES
 #---------------------
-
-def make_box(arg):
-    if arg == 'imp':
-        return 'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox\n\
-box = BRepPrimAPI_MakeBox(30, 60, 60).Shape()\n\
-display.DisplayShape(box)\n'
-    else :
-        return 'box = BRepPrimAPI_MakeBox(30, 60, 60).Shape()\n\
-display.DisplayShape(box)\n'
+class Shape():
+    def make_box(name, point, settings):
+        method = str(name)+' = BRepPrimAPI_MakeBox('+str(point)+','+str(settings)+').Shape()\n\
+Shape'+str(name)+'= display.DisplayShape('+str(name)+')[0]\n'
+        return method
 
 def make_sphere(arg):
     if arg == 'imp':
@@ -29,14 +25,15 @@ sphere_origin = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))\n\
 sphere = BRepPrimAPI_MakeSphere(sphere_origin, sphere_radius, -sphere_angle, sphere_angle).Shape()\n\
 display.DisplayShape(sphere)\n'
 
-def make_point(arg):
-    if arg == 'imp':
-        return 'from OCC.Core.gp import gp_Pnt\n\
-point = gp_Pnt(0, 0, 0)\n\
-display.DisplayShape(point)\n'
-    else:
-        return 'point = gp_Pnt(0, 0, 0)\n\
-display.DisplayShape(point)\n'
+#---------------------
+#CONSTRUCTION
+#---------------------
+
+class Construction():
+    def make_point(name, settings):
+        method = str(name) + ' = gp_Pnt(' + str(settings) + ')\n\
+Construction' + str(name) + '= display.DisplayShape(' + str(name) + ')[0]\n'
+        return method
 
 #---------------------
 #TRANSFORMATION
