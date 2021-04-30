@@ -6,12 +6,11 @@ from OCC.Extend.DataExchange import read_step_file
 from OCC.Core.Graphic3d import Graphic3d_NOM_STEEL
 
 block_cylinder_shape = read_step_file('files\cylinder_block.stp')
-display.DisplayShape(block_cylinder_shape, update=True)
+Shapeblock_cylindar = display.DisplayShape(block_cylinder_shape, update=True)
 box = BRepPrimAPI_MakeBox(30, 60, 90).Shape()
 trns = gp_Trsf()
 trns.SetTranslation(gp_Vec(0, -60, -35))
 mold_basis = BRepBuilderAPI_Transform(box, trns).Shape()
-display.DisplayShape(mold_basis, update=True, material=Graphic3d_NOM_STEEL)
+Shapemoldbasis = display.DisplayShape(mold_basis, update=True, material=Graphic3d_NOM_STEEL)
 mold = BRepAlgoAPI_Cut(mold_basis, block_cylinder_shape).Shape()
-display.EraseAll()
-display.DisplayShape(mold, update=True, material=Graphic3d_NOM_STEEL)
+Shapemold = display.DisplayShape(mold, update=True, material=Graphic3d_NOM_STEEL)
