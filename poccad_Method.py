@@ -215,6 +215,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         
     def render_file(self):
         print('render')
+        #clear the tree layer
         iterator = QTreeWidgetItemIterator(self.ui.treelayers, QTreeWidgetItemIterator.All)
         while iterator.value():
             iterator.value().takeChildren()
@@ -233,11 +234,12 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
             for line in cad_edit:
                 if line.startswith("display = self.") :
                     pass
-                if line.startswith('display.FitAll()'):
+                elif line.startswith('display.FitAll()'):
                     pass
                 else :
                     cfe.writelines(line)
             cfe.write('\ndisplay.FitAll()')
+        cfe.close()
 
         with open ("cad_file_edit.occ", "r") as cfe :
             lines = cfe.readlines()
@@ -245,14 +247,14 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                 if 'display.DisplaySha' in line :
                     layer = line.split('=', 1)
                     layername = layer[0]
-                    self.load_tree_layers(layername, 'on')
+                    if line.startswith('#'):
+                        layername = layername.strip('#')
+                        self.load_tree_layers(layername, 'off')
+                    else :
+                        self.load_tree_layers(layername, 'on')
                     print(layername)
-                if 'display.Context.Era' in line :
-                    layer1 = line.split('display.Context.Erase(', 1)
-                    layer2 = layer1[1].split(', True)', 1)
-                    layername = layer2[0]
-                    self.load_tree_layers(layername, 'off')
-                    print(layername)
+        cfe.close()
+
 
         try :
             @contextlib.contextmanager
@@ -308,33 +310,49 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         displaylayer = QTreeWidgetItem(self.ui.treelayers, [layername])
         if state == 'on':
             if 'Shape' in layername :
-                displaylayer.setCheckState(0, Qt.Checked)
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_on.png'))
-            if 'Construction' in layername:
-                displaylayer.setCheckState(0, Qt.Checked)
+            elif 'Construction' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
         if state == 'off':
-            item = QTreeWidgetItem(self.ui.treelayers,[layername])
-            self.ui.treelayers.takeTopLevelItem(self.ui.treelayers.indexOfTopLevelItem(item))
-            displaylayer = QTreeWidgetItem(self.ui.treelayers, [layername])
-            if 'Shape' in layername:
-                displaylayer.setCheckState(0, Qt.Unchecked)
+            if 'Shape' in layername :
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
-                self.ui.OCCedit.appendPlainText("display.Context.Erase("+str(layername)+", True)")
-            if 'Construction' in layername:
-                displaylayer.setCheckState(0, Qt.Unchecked)
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+            elif 'Construction' in layername:
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+
 
     def change_layer_state(self, item):#TODO
         print (item)
         layer = item.text(0)
-        self.ui.treelayers.takeTopLevelItem(self.ui.treelayers.indexOfTopLevelItem(item))
-        displaylayer = QTreeWidgetItem(self.ui.treelayers, [layer])
+        print(str(layer))
+        #self.ui.treelayers.takeTopLevelItem(self.ui.treelayers.indexOfTopLevelItem(item))
+        #displaylayer = QTreeWidgetItem(self.ui.treelayers, [layer])
+        with open ("cad_file_edit.occ", "r") as cfe :
+            self.ui.OCCedit.clear()
+            lines = cfe.readlines()
+            for line in lines:
+                if 'display.DisplaySha' in line :
+                    if str(layer) in line :
+                        if line.startswith('#'):
+                            line = line.strip('#')
+                            self.ui.OCCedit.appendPlainText(line.strip('\n'))
+                        else :
+                            line = '#'+str(line)
+                            self.ui.OCCedit.appendPlainText(line.strip('\n'))
+                    else :
+                        self.ui.OCCedit.appendPlainText(line.strip('\n'))
+                else :
+                    if "display = self." in line :
+                        pass
+                    elif line.startswith('display.FitAll()'):
+                        pass
+                    elif line == '\n':
+                        pass
+                    else:
+                        self.ui.OCCedit.appendPlainText(line.strip('\n'))
 
-        if 'Shape' in layer :
-            displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
-            self.ui.OCCedit.appendPlainText('display.Context.Erase(' + (str(layer) + ', True)'))
-            self.render_file()
+        cfe.close()
+        self.render_file()
+
 
     #PythonOCC functions :
     #Shape
