@@ -4,7 +4,7 @@
 class Shape():
     def make_box(name, point, settings):
         method = str(name)+' = BRepPrimAPI_MakeBox('+str(point)+','+str(settings)+').Shape()\n\
-Shape'+str(name)+'= display.DisplayShape('+str(name)+')[0]\n'
+Shape'+str(name)+'= display.DisplayShape('+str(name)+')\n'
         return method
 
 def make_sphere(arg):
@@ -32,7 +32,7 @@ display.DisplayShape(sphere)\n'
 class Construction():
     def make_point(name, settings):
         method = str(name) + ' = gp_Pnt(' + str(settings) + ')\n\
-Construction' + str(name) + '= display.DisplayShape(' + str(name) + ')[0]\n'
+Construction' + str(name) + '= display.DisplayShape(' + str(name) + ')\n'
         return method
 
 #---------------------
