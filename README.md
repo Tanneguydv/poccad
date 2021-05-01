@@ -1,4 +1,5 @@
-![poccad_github](https://user-images.githubusercontent.com/81742654/116221635-15cd5d00-a74e-11eb-86e8-b058216ed3c8.png)
+![poccad_github](https://user-images.githubusercontent.com/81742654/116783820-36b8e980-aa91-11eb-8137-e7502adc98ee.png)
+
 
 # poccad
 a simple pyqt5 modelisation/visualization didactic tool for pythonocc
