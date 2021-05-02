@@ -7,6 +7,11 @@ class Shape():
 Shape'+str(name)+'= display.DisplayShape('+str(name)+')\n'
         return method
 
+    def make_cylinder(name, axis, settings):
+        method = str(name) + ' = BRepPrimAPI_MakeCylinder(' + str(axis) + ',' + str(settings) + ').Shape()\n\
+Shape' + str(name) + '= display.DisplayShape(' + str(name) + ')\n'
+        return method
+
 def make_sphere(arg):
     if arg == 'imp':
         return  'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere\n\
@@ -30,9 +35,13 @@ display.DisplayShape(sphere)\n'
 #---------------------
 
 class Construction():
-    def make_point(name, settings):
+    def draw_point(name, settings):
         method = str(name) + ' = gp_Pnt(' + str(settings) + ')\n\
 Construction' + str(name) + '= display.DisplayShape(' + str(name) + ')\n'
+        return method
+
+    def draw_axis(name, point, dir):
+        method = str(name) + ' = gp_Ax2('+str(point)+', gp_Dir('+str(dir)+'))\n'
         return method
 
 #---------------------
