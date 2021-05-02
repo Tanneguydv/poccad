@@ -16,7 +16,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>ui_files/icons/poccad.png</normaloff>ui_files/icons/poccad.png</iconset>
+    <normaloff>ui_files/icons/poccad.ico</normaloff>ui_files/icons/poccad.ico</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <property name="sizePolicy">
@@ -474,6 +474,11 @@ font: 9pt &quot;Consolas&quot;;</string>
                   <property name="headerHidden">
                    <bool>true</bool>
                   </property>
+                  <column>
+                   <property name="text">
+                    <string notr="true">1</string>
+                   </property>
+                  </column>
                  </widget>
                 </item>
                </layout>
@@ -528,8 +533,11 @@ font: 9pt &quot;Consolas&quot;;</string>
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
+    <addaction name="separator"/>
     <addaction name="actionSave"/>
     <addaction name="actionSave_as"/>
+    <addaction name="actionExport"/>
+    <addaction name="separator"/>
     <addaction name="actionQuit"/>
    </widget>
    <widget class="QMenu" name="menuShape">
@@ -537,6 +545,7 @@ font: 9pt &quot;Consolas&quot;;</string>
      <string>Shape</string>
     </property>
     <addaction name="actionBox"/>
+    <addaction name="actionCylinder"/>
     <addaction name="actionSphere"/>
     <addaction name="actionRead_Step"/>
    </widget>
@@ -557,7 +566,7 @@ font: 9pt &quot;Consolas&quot;;</string>
      <string>Construction</string>
     </property>
     <addaction name="actionPoint"/>
-    <addaction name="actionVector"/>
+    <addaction name="actionAxis"/>
    </widget>
    <widget class="QMenu" name="menuExport">
     <property name="title">
@@ -573,9 +582,9 @@ font: 9pt &quot;Consolas&quot;;</string>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuShape"/>
+   <addaction name="menuConstruction"/>
    <addaction name="menuBoolean"/>
    <addaction name="menuTransform"/>
-   <addaction name="menuConstruction"/>
    <addaction name="menuExport"/>
    <addaction name="menuHelp"/>
   </widget>
@@ -591,6 +600,13 @@ font: 9pt &quot;Consolas&quot;;</string>
   <action name="actionBox">
    <property name="text">
     <string>Box</string>
+   </property>
+   <property name="font">
+    <font>
+     <italic>false</italic>
+     <strikeout>false</strikeout>
+     <kerning>false</kerning>
+    </font>
    </property>
   </action>
   <action name="actionOpen">
@@ -613,6 +629,12 @@ font: 9pt &quot;Consolas&quot;;</string>
    <property name="text">
     <string>Sphere</string>
    </property>
+   <property name="font">
+    <font>
+     <strikeout>false</strikeout>
+     <kerning>false</kerning>
+    </font>
+   </property>
   </action>
   <action name="actionRead_Step">
    <property name="text">
@@ -627,11 +649,6 @@ font: 9pt &quot;Consolas&quot;;</string>
   <action name="actionPoint">
    <property name="text">
     <string>Point</string>
-   </property>
-  </action>
-  <action name="actionVector">
-   <property name="text">
-    <string>Vector</string>
    </property>
   </action>
   <action name="actionTranslate">
@@ -663,6 +680,24 @@ font: 9pt &quot;Consolas&quot;;</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+S</string>
+   </property>
+  </action>
+  <action name="actionExport">
+   <property name="text">
+    <string>Export .py</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+E</string>
+   </property>
+  </action>
+  <action name="actionCylinder">
+   <property name="text">
+    <string>Cylinder</string>
+   </property>
+  </action>
+  <action name="actionAxis">
+   <property name="text">
+    <string>Axis</string>
    </property>
   </action>
  </widget>

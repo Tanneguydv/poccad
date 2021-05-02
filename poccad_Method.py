@@ -53,12 +53,15 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionOpen.triggered.connect(self.open_file)
         self.ui.actionSave.triggered.connect(self.save_file)
         self.ui.actionSave_as.triggered.connect(self.save_file_as)
+        self.ui.actionExport.triggered.connect(self.export_file)
         self.ui.actionQuit.triggered.connect(self.quit)
         self.ui.actionAbout.triggered.connect(self.dialog_about)
 
         self.ui.actionBox.triggered.connect(self.makebox)
+        self.ui.actionCylinder.triggered.connect(self.makecylinder)
         self.ui.actionSphere.triggered.connect(self.makesphere)
-        self.ui.actionPoint.triggered.connect(self.makepoint)
+        self.ui.actionPoint.triggered.connect(self.drawpoint)
+        self.ui.actionAxis.triggered.connect(self.drawaxis)
         self.ui.actionCut.triggered.connect(self.boolcut)
         self.ui.actionTranslate.triggered.connect(self.translate)
         self.ui.actionExportstep.triggered.connect(self.exportstep)
@@ -145,8 +148,10 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     def initialize(self):
         self.box = False
+        self.cylinder = False
         self.sphere = False
         self.point = False
+        self.axis = False
         self.cut = False
         self.translate = False
         self.expstep = False
@@ -166,7 +171,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     def open_file(self):
         self.initialize()
-        self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File')
+        self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File to open',"","All Files (*);;pocc Files (*.pocc)")
         if self.occ_file_path:
             self.ui.output.appendPlainText('open ' + str(self.occ_file_path))
             self.file_issaved = True
@@ -196,10 +201,10 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
     def save_file_as(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        self.fileName, _ = QFileDialog.getSaveFileName(self,"QFileDialog.getSaveFileName()","","All Files (*);;occ Files (*.occ)", options=options)
+        self.fileName, _ = QFileDialog.getSaveFileName(self,"Save file as","","All Files (*);;pocc Files (*.pocc)", options=options)
         if self.fileName:
             self.file_issaved = True
-            self.saved_file = (str(self.fileName)+'.occ')
+            self.saved_file = (str(self.fileName)+'.pocc')
             self.ui.output.appendPlainText('saving ' + str(self.saved_file))
             cad_edit = self.ui.OCCedit.toPlainText()
             with open (self.saved_file, "w") as cfe :
@@ -212,6 +217,30 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                         cfe.writelines(line)
         else :
             pass
+        self.load_project_structure(self.cwd, self.ui.treeWidget)
+
+    def export_file(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        self.fileName, _ = QFileDialog.getSaveFileName(self,"Export file as","","All Files (*);;pocc Files (*.pocc);; Python Files (*.py)", options=options)
+        if self.fileName:
+            self.exported_file = (str(self.fileName)+'.py')
+            self.ui.output.appendPlainText('exporting as' + str(self.exported_file))
+            cad_edit = self.ui.OCCedit.toPlainText()
+            with open (self.exported_file, "w") as cfe :
+                cfe.write("#file generated with poccad under GPL-3.0 License\n#please visit https://github.com/Tanneguydv/poccad\nfrom OCC.Display.SimpleGui import init_display\ndisplay,start_display, add_menu,add_functionto_menu = init_display()\n")
+                for line in cad_edit:
+                    if line.startswith("display = self.display"):
+                        pass
+                    elif line.startswith('display.FitAll()'):
+                        pass
+                    else:
+                        cfe.writelines(line)
+                cfe.write("display.FitAll()\nstart_display()\n")
+
+        else :
+            pass
+        self.load_project_structure(self.cwd, self.ui.treeWidget)
         
     def render_file(self):
         print('render')
@@ -225,11 +254,11 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
             self.ui.treelayers.takeTopLevelItem(i)
             i -= 1
 
-        if os.path.isfile("cad_file_edit.occ"):
-            os.remove("cad_file_edit.occ")
+        if os.path.isfile("cad_file_edit.pocc"):
+            os.remove("cad_file_edit.pocc")
         self.display.EraseAll()
         cad_edit = self.ui.OCCedit.toPlainText()
-        with open ("cad_file_edit.occ", "a") as cfe :
+        with open ("cad_file_edit.pocc", "a") as cfe :
             cfe.write("display = self.display\n")
             for line in cad_edit:
                 if line.startswith("display = self.") :
@@ -241,7 +270,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
             cfe.write('\ndisplay.FitAll()')
         cfe.close()
 
-        with open ("cad_file_edit.occ", "r") as cfe :
+        with open ("cad_file_edit.pocc", "r") as cfe :
             lines = cfe.readlines()
             for line in lines:
                 if 'display.DisplaySha' in line :
@@ -267,7 +296,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                 sys.stdout = old
 
             with stdoutIO() as s:
-                exec(open("cad_file_edit.occ").read())
+                exec(open("cad_file_edit.pocc").read())
             self.ui.output.appendPlainText(str(s.getvalue()))
             self.render = True
         except Exception :
@@ -300,8 +329,8 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         infobox.exec_()
 
     def quit(self):
-        if os.path.isfile("cad_file_edit.occ"):
-            os.remove("cad_file_edit.occ")
+        if os.path.isfile("cad_file_edit.pocc"):
+            os.remove("cad_file_edit.pocc")
         sys.exit()
 
     #LAYERS
@@ -326,7 +355,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         print(str(layer))
         #self.ui.treelayers.takeTopLevelItem(self.ui.treelayers.indexOfTopLevelItem(item))
         #displaylayer = QTreeWidgetItem(self.ui.treelayers, [layer])
-        with open ("cad_file_edit.occ", "r") as cfe :
+        with open ("cad_file_edit.pocc", "r") as cfe :
             self.ui.OCCedit.clear()
             lines = cfe.readlines()
             for line in lines:
@@ -395,6 +424,48 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                     self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
         self.ui.entryline.returnPressed.connect(send_param)
 
+    def makecylinder(self):
+        self.makingcylinder = True
+        self.ui.output.appendPlainText('make cylinder method : name;axis;radius,length')
+        self.ui.entryline.setFocus()
+
+        def send_param():
+            self.ui.output.appendPlainText(self.ui.entryline.text())
+            if self.makingcylinder == True:
+                try:
+                    if self.ui.entryline.text() == '':
+                        name = 'cylinder'
+                        axis = 'gp_Ax2(gp_Pnt(0, 0, 5), gp_Dir(0, 0, 1))'
+                        settings = '10,10'
+                    else:
+                        cylinderparam = self.ui.entryline.text().split(';', 2)
+                        name = cylinderparam[0]
+                        if name == '':
+                            name = 'cylinder'
+                        axis = cylinderparam[1]
+                        if axis == '':
+                            axis = 'gp_Ax2(gp_Pnt(0, 0, 5), gp_Dir(0, 0, 1))'
+                        settings = cylinderparam[2]
+                        if settings == '':
+                            settings = '10,10'
+                    if self.cylinder == False:
+                        self.ui.OCCedit.appendPlainText('from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder\nfrom OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n')
+                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(name, axis, settings))
+                        self.cylinder = True
+                    else:
+                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(name, axis, settings))
+                    self.ui.entryline.clear()
+                    self.render_file()
+                    self.ui.output.appendPlainText('Rendering file...')
+                    self.ui.OCCedit.setFocus()
+                    self.makingcylinder = False
+                except Exception as e:
+                    self.ui.output.appendPlainText(
+                        str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
+
+        self.ui.entryline.returnPressed.connect(send_param)
+
+
     def makesphere(self):
         if self.sphere == False :
             self.ui.OCCedit.appendPlainText(sc.make_sphere("imp"))
@@ -422,12 +493,12 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     #Constrution
 
-    def makepoint(self):
-        self.makingpoint = True
-        self.ui.output.appendPlainText('make point method : name;x,y,z')
+    def drawpoint(self):
+        self.drawingpoint = True
+        self.ui.output.appendPlainText('draw point method : name;x,y,z')
         self.ui.entryline.setFocus()
         def send_param():
-            if self.makingpoint == True :
+            if self.drawingpoint == True :
                 try :
                     if self.ui.entryline.text() == '' :
                         name = 'point'
@@ -442,15 +513,53 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                             settings = '0,0,0'
                     if self.point == False :
                         self.ui.OCCedit.appendPlainText('from OCC.Core.gp import gp_Pnt\n')
-                        self.ui.OCCedit.appendPlainText(Construction.make_point(name, settings))
+                        self.ui.OCCedit.appendPlainText(Construction.draw_point(name, settings))
                         self.point = True
                     else :
-                        self.ui.OCCedit.appendPlainText(Construction.make_point(name, settings))
+                        self.ui.OCCedit.appendPlainText(Construction.draw_point(name, settings))
                     self.ui.entryline.clear()
                     self.render_file()
                     self.ui.output.appendPlainText('Rendering file...')
                     self.ui.OCCedit.setFocus()
-                    self.makingpoint = False
+                    self.drawingpoint = False
+                except Exception as e:
+                    self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
+        self.ui.entryline.returnPressed.connect(send_param)
+
+    def drawaxis(self):
+        self.drawingaxis = True
+        self.ui.output.appendPlainText('draw axis method : name;point;dirx, y, z')
+        self.ui.entryline.setFocus()
+
+        def send_param():
+            self.ui.output.appendPlainText(self.ui.entryline.text())
+            if self.drawingaxis == True:
+                try:
+                    if self.ui.entryline.text() == '':
+                        name = 'axis'
+                        point = 'gp_Pnt(0, 0, 0)'
+                        dir = '0,0,1'
+                    else:
+                        param = self.ui.entryline.text().split(';', 2)
+                        name = param[0]
+                        if name == '':
+                            name = 'axis'
+                        point = param[1]
+                        if point == '':
+                            point = 'gp_Pnt(0, 0, 0)'
+                        dir = param[2]
+                        if dir == '':
+                            dir = '0,0,1'
+                    if self.axis == False :
+                        self.ui.OCCedit.appendPlainText('from OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n')
+                        self.ui.OCCedit.appendPlainText(Construction.draw_axis(name, point, dir))
+                        self.point = True
+                    else :
+                        self.ui.OCCedit.appendPlainText(Construction.draw_axis(name, point, dir))
+                    self.ui.entryline.clear()
+                    self.ui.output.appendPlainText('Rendering file...')
+                    self.ui.OCCedit.setFocus()
+                    self.drawingaxis = False
                 except Exception as e:
                     self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
         self.ui.entryline.returnPressed.connect(send_param)
