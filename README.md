@@ -2,15 +2,15 @@
 
 
 # poccad
-a simple pyqt5 modelisation/visualization didactic tool for pythonocc
+a pyqt5 modelisation/visualization didactic tool for pythonocc
 
 Edit your code and render your file on the same UI.
 
 Use any of the pythonocc-core method as long as you import them.
 
-I guess the code needs a lot clean-up (several ui/dialog bugs remain)  and hope it would be useful to anybody. I've started to implement method in `lib\Scripts` such as `make_box` , `bool_cut` or `export_step`, as I'm new to all this any help is welcome! :)
+I guess the code needs a lot clean-up (several ui/dialog bugs remain)  and hope it would be useful to anybody. I've started to implement method in `lib\Scripts` such as `make_box` , `draw_point` or `export_step`, as I'm new to all this any help is welcome! :)
 
-Generated files are named `*.occ`
+Generated files are named `*.pocc`
 
 The Qt designer file is `poccad.ui` is converted in `poccad.py` thanks to the line in `cmd_qtGUI.txt` and all the functions are stored under `poccad_Method.py` 
 
