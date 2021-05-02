@@ -10,11 +10,11 @@ SHELL ["conda", "run", "-n", "dev_pythonocc", "/bin/bash", "-c"]
 
 ENV PATH /opt/conda/envs/dev_pythonocc/bin:$PATH
 
-WORKDIR /app/pythonocc-demos
+WORKDIR /
 
-COPY core_webgl_threejs_torus.py .
+COPY poccad_launcher.py .
 
 EXPOSE 8000
 
-ENTRYPOINT [ "python", "core_webgl_threejs_torus.py" ]
+ENTRYPOINT [ "python", "poccad_launcher.py" ]
 
