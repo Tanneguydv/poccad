@@ -11,11 +11,11 @@ Example of use :
 - Developp functions in a friendly user framework before implement in your code
 - Discover and learn pythonocc by trying and consult files
 
-I guess the code needs a lot clean-up and hope it would be useful to anybody. I've started to implement method in `lib\Scripts` such as `make_box` , `draw_point` or `export_step`, a contribute file method description will follow.
+I guess the code needs a lot clean-up and hope it would be useful to anybody. I've started to implement method in `lib\Scripts` such as `make_box` , `draw_point` or `export_step`, a contribute instructions file will follow.
 
-Generated files are named `*.pocc`
+Generated files are named `*.pocc` or `*.py`
 
-The Qt designer file is `poccad.ui` is converted in `poccad.py` thanks to the line in `cmd_qtGUI.txt` and all the functions are stored under `poccad_Method.py` 
+The Qt designer file is `poccad.ui` then converted in `poccad.py` thanks to the line stored in `cmd_qtGUI.txt` and all the functions are stored under `poccad_Method.py` 
 
 # Launch
 
