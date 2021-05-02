@@ -1,0 +1,7 @@
+name: dev_pythonocc
+channels:
+  - conda-forge
+  - anaconda
+dependencies:
+  - python=3.8  
+  - pythonocc-core=7.4.1
