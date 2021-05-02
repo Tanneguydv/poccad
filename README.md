@@ -4,7 +4,7 @@
 # poccad
 poccad is a Python parametric CAD application using pyqt5 and keeping original pythonocc scripts syntax.
 
-The idea is modeling in an user friendly framework with a didactic way to learn and use pythonocc. You can edit your code and render your file on the same UI, use any of the pythonocc-core method as long as you import them, export your project as `.py` files or 3d exchange format such as `.stp`, .`iges` or `.stl`.
+The idea is modeling in an user friendly framework with a didactic way to learn and use pythonocc. You can edit your code and render your file on the same UI, use any of the pythonocc-core method that are not yet implement as long as you import them, export your project as `.py` files or 3d exchange format such as `.stp`, .`iges` or `.stl`.
 
 Example of use :
 - Modeling part and export
