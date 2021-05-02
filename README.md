@@ -8,7 +8,7 @@ The idea is modeling in an user friendly framework with a didactic way to learn 
 
 Example of use :
 - Modeling part and export
-- Developp functions in an friendly user framework before implement in your code
+- Developp functions in a friendly user framework before implement in your code
 - Discover and learn pythonocc by trying and consult files
 
 I guess the code needs a lot clean-up and hope it would be useful to anybody. I've started to implement method in `lib\Scripts` such as `make_box` , `draw_point` or `export_step`, a contribute file method description will follow.
