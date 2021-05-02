@@ -236,7 +236,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                         pass
                     else:
                         cfe.writelines(line)
-                cfe.write("display.FitAll()\nstart_display()\n")
+                cfe.write("\ndisplay.FitAll()\nstart_display()\n")
 
         else :
             pass
