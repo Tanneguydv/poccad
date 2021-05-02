@@ -2,13 +2,16 @@
 
 
 # poccad
-a pyqt5 modelisation/visualization didactic tool for pythonocc
+poccad is a Python parametric CAD application using pyqt5 and keeping original pythonocc scripts syntax.
 
-Edit your code and render your file on the same UI.
+The idea is modeling in an user friendly framework with a didactic way to learn and use pythonocc. You can edit your code and render your file on the same UI, use any of the pythonocc-core method as long as you import them, export your project as `.py` files or 3d exchange format such as `.stp`, .`iges` or `.stl`.
 
-Use any of the pythonocc-core method as long as you import them.
+Example of use :
+- Modeling part and export
+- Developp functions in an friendly user framework before implement in your code
+- Discover and learn pythonocc by trying and consult files
 
-I guess the code needs a lot clean-up (several ui/dialog bugs remain)  and hope it would be useful to anybody. I've started to implement method in `lib\Scripts` such as `make_box` , `draw_point` or `export_step`, as I'm new to all this any help is welcome! :)
+I guess the code needs a lot clean-up and hope it would be useful to anybody. I've started to implement method in `lib\Scripts` such as `make_box` , `draw_point` or `export_step`, a contribute file method description will follow.
 
 Generated files are named `*.pocc`
 
@@ -16,15 +19,15 @@ The Qt designer file is `poccad.ui` is converted in `poccad.py` thanks to the li
 
 # Launch
 
-Requires : https://github.com/tpaviot/pythonocc-core and PyQt5
+Requires : pythonocc-core and PyQt5. Installation guide will be add soon, but you can refer to https://github.com/tpaviot/pythonocc-core with for example conda installing  https://anaconda.org/conda-forge/pythonocc-core 
 
 Execute `poccad_launcher.py` to get started
 
-**new ui design and functions, readme update coming soon**
+**New ui design and functions, readme update coming soon**
 
 ![20210430_new-ui](https://user-images.githubusercontent.com/81742654/116717430-29402880-a9d9-11eb-8fe0-323d050dfb1e.jpg)
 
-# ex ui example :
+# Examples from the previous UI :
 
 **Open a demo file :**
 
