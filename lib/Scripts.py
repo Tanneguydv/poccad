@@ -41,7 +41,8 @@ class Construction():
         return method
 
     def draw_axis(name, point, dir):
-        method = str(name) + ' = gp_Ax2('+str(point)+', gp_Dir('+str(dir)+'))\n'
+        method = str(name) + ' = gp_Ax2('+str(point)+', gp_Dir('+str(dir)+'))\n\
+'+str(name)+ '_Axis = display.DisplayShape(make_edge('+str(point)+', gp_Pnt('+str(dir)+')))'
         return method
 
 #---------------------
