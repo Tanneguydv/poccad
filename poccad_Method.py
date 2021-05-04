@@ -3,6 +3,7 @@
 import os
 import os.path
 import sys
+import webbrowser
 from io import StringIO
 import contextlib
 import traceback
@@ -20,7 +21,7 @@ load_backend('qt-pyqt5')
 import OCC.Display.qtDisplay as qtDisplay
 
 import lib.Scripts as sc
-from lib.Scripts import Shape, Construction
+from lib.Scripts import Shape, Construction, Boolean
 from poccad import Ui_poccad
 
 
@@ -56,6 +57,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.actionExport.triggered.connect(self.export_file)
         self.ui.actionQuit.triggered.connect(self.quit)
         self.ui.actionAbout.triggered.connect(self.dialog_about)
+        self.ui.actionUser_Guide.triggered.connect(self.user_guide_html)
 
         self.ui.actionBox.triggered.connect(self.makebox)
         self.ui.actionCylinder.triggered.connect(self.makecylinder)
@@ -85,6 +87,12 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         self.ui.treeWidget.itemDoubleClicked.connect(self.show_consult)
         self.ui.treelayers.itemDoubleClicked.connect(self.change_layer_state)
 
+    def user_guide_html(self):
+        try :
+            webbrowser.open(self.cwd + '\docs\_build\html\index.html')
+        except:
+            self.ui.Consult.appendPlainText('no html file found')
+
     def on_contextmenu_tree(self, point):
         self.popTreeMenu.exec_(self.ui.treeWidget.mapToGlobal(point))
 
@@ -94,15 +102,21 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         dir =  ([node.text(0) for node in self.getParents(item)])
         length = len(dir)
         if dir :
+            if length == 6 :
+                print(str(dir[5])+ '\\' +str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
+                consult_file = str(dir[5])+ '\\' +str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
+            if length == 5 :
+                print(str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
+                consult_file = str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
             if length == 4 :
                 print(str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[1])+ '\\' + str(dir[0]) +'\\' + str(file)
+                consult_file = str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
             if length == 3 :
                 print(str(dir[2])+ '\\' +str(dir[1])+ '\\' +str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[0]) +'\\' + str(file)
+                consult_file = str(dir[2])+ '\\' +str(dir[1])+ '\\' +str(dir[0]) + '\\'+ str(file)
             if length == 2 :
                 print(str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[1])+ '\\' + str(dir[0]) +'\\' + str(file)
+                consult_file = str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
             if length == 1 :
                 print(str(dir[0]) + '\\'+ str(file))
                 consult_file = str(dir[0]) +'\\' + str(file)
@@ -110,9 +124,14 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
             print (str(file))
             consult_file = (str(file))
         self.ui.Consult.clear()
-        with open (consult_file , 'r') as cf:
-            for line in cf :
-                self.ui.Consult.appendPlainText(line.strip('\n'))
+        if 'html' in consult_file:
+            html_file = os.path.abspath(consult_file)
+            print(html_file)
+            webbrowser.open_new_tab(html_file)
+        else :
+            with open (consult_file , 'r') as cf:
+                for line in cf :
+                    self.ui.Consult.appendPlainText(line.strip('\n'))
 
     def getParents(self, item):
         """
@@ -152,7 +171,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         self.sphere = False
         self.point = False
         self.axis = False
-        self.cut = False
+        self.booleancut = False
         self.translate = False
         self.expstep = False
         self.file_issaved = False
@@ -273,7 +292,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         with open ("cad_file_edit.pocc", "r") as cfe :
             lines = cfe.readlines()
             for line in lines:
-                if 'display.DisplaySha' in line :
+                if 'display.Display' in line :
                     layer = line.split('=', 1)
                     layername = layer[0]
                     if line.startswith('#'):
@@ -348,8 +367,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
             elif 'Construction' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
 
-
-    def change_layer_state(self, item):#TODO
+    def change_layer_state(self, item):
         print (item)
         layer = item.text(0)
         print(str(layer))
@@ -359,7 +377,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
             self.ui.OCCedit.clear()
             lines = cfe.readlines()
             for line in lines:
-                if 'display.DisplaySha' in line :
+                if 'display.Display' in line :
                     if str(layer) in line :
                         if line.startswith('#'):
                             line = line.strip('#')
@@ -465,7 +483,6 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
         self.ui.entryline.returnPressed.connect(send_param)
 
-
     def makesphere(self):
         if self.sphere == False :
             self.ui.OCCedit.appendPlainText(sc.make_sphere("imp"))
@@ -476,11 +493,35 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
     #Boolean
 
     def boolcut(self):
-        if self.cut == False :
-            self.ui.OCCedit.appendPlainText(sc.bool_cut("imp"))
-            self.cut = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.bool_cut(''))
+        self.boolingcut = True
+        self.ui.output.appendPlainText("select basis and cutter's layer , type name, and press OK")
+        self.ui.entryline.setFocus()
+        def send_param():
+            if self.boolingcut == True:
+                try:
+                    if self.ui.entryline.text() == '' :
+                        name = 'result'
+                    else :
+                        name = self.ui.entryline.text()
+                    shapes = self.ui.treelayers.selectedItems()
+                    layer_basis = shapes[0].text(0)
+                    basis = str(layer_basis).strip('Shape')
+                    layer_cutter = shapes[1].text(0)
+                    cutter = str(layer_cutter).strip('Shape')
+                    if self.booleancut == False :
+                        self.ui.OCCedit.appendPlainText('from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Cut\nfrom OCC.Core.Graphic3d import Graphic3d_NOM_STEEL\n')
+                        self.ui.OCCedit.appendPlainText(Boolean.bool_cut(name, basis, cutter))
+                    else :
+                        self.ui.OCCedit.appendPlainText(Boolean.bool_cut(name, basis,cutter))
+                    self.ui.entryline.clear()
+                    self.render_file()
+                    self.ui.output.appendPlainText('Rendering file...')
+                    self.ui.OCCedit.setFocus()
+                    self.boolingcut = False
+                except Exception as e :
+                    self.ui.Consult.appendPlainText(str(e))
+        self.ui.entryline.returnPressed.connect(send_param)
+
 
     #Transformations
 

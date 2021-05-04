@@ -283,6 +283,8 @@ class Ui_poccad(object):
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.treelayers.sizePolicy().hasHeightForWidth())
         self.treelayers.setSizePolicy(sizePolicy)
+        self.treelayers.setEditTriggers(QtWidgets.QAbstractItemView.DoubleClicked|QtWidgets.QAbstractItemView.EditKeyPressed)
+        self.treelayers.setSelectionMode(QtWidgets.QAbstractItemView.MultiSelection)
         self.treelayers.setHeaderHidden(True)
         self.treelayers.setObjectName("treelayers")
         self.treelayers.headerItem().setText(0, "1")
@@ -368,6 +370,8 @@ class Ui_poccad(object):
         self.actionCylinder.setObjectName("actionCylinder")
         self.actionAxis = QtWidgets.QAction(poccad)
         self.actionAxis.setObjectName("actionAxis")
+        self.actionUser_Guide = QtWidgets.QAction(poccad)
+        self.actionUser_Guide.setObjectName("actionUser_Guide")
         self.menuMenu.addAction(self.actionNew)
         self.menuMenu.addAction(self.actionOpen)
         self.menuMenu.addSeparator()
@@ -386,6 +390,7 @@ class Ui_poccad(object):
         self.menuConstruction.addAction(self.actionAxis)
         self.menuExport.addAction(self.actionExportstep)
         self.menuHelp.addAction(self.actionAbout)
+        self.menuHelp.addAction(self.actionUser_Guide)
         self.menubar.addAction(self.menuMenu.menuAction())
         self.menubar.addAction(self.menuShape.menuAction())
         self.menubar.addAction(self.menuConstruction.menuAction())
@@ -395,7 +400,7 @@ class Ui_poccad(object):
         self.menubar.addAction(self.menuHelp.menuAction())
 
         self.retranslateUi(poccad)
-        self.tabWidget.setCurrentIndex(0)
+        self.tabWidget.setCurrentIndex(2)
         QtCore.QMetaObject.connectSlotsByName(poccad)
 
     def retranslateUi(self, poccad):
@@ -435,4 +440,5 @@ class Ui_poccad(object):
         self.actionExport.setShortcut(_translate("poccad", "Ctrl+E"))
         self.actionCylinder.setText(_translate("poccad", "Cylinder"))
         self.actionAxis.setText(_translate("poccad", "Axis"))
+        self.actionUser_Guide.setText(_translate("poccad", "User Guide"))
 from lib.codeeditor import CodeEditor

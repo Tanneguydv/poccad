@@ -374,7 +374,7 @@ font: 9pt &quot;Consolas&quot;;</string>
                <string notr="true"/>
               </property>
               <property name="currentIndex">
-               <number>0</number>
+               <number>2</number>
               </property>
               <widget class="QWidget" name="tab_3">
                <property name="sizePolicy">
@@ -470,6 +470,12 @@ font: 9pt &quot;Consolas&quot;;</string>
                     <horstretch>0</horstretch>
                     <verstretch>0</verstretch>
                    </sizepolicy>
+                  </property>
+                  <property name="editTriggers">
+                   <set>QAbstractItemView::DoubleClicked|QAbstractItemView::EditKeyPressed</set>
+                  </property>
+                  <property name="selectionMode">
+                   <enum>QAbstractItemView::MultiSelection</enum>
                   </property>
                   <property name="headerHidden">
                    <bool>true</bool>
@@ -579,6 +585,7 @@ font: 9pt &quot;Consolas&quot;;</string>
      <string>Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionUser_Guide"/>
    </widget>
    <addaction name="menuMenu"/>
    <addaction name="menuShape"/>
@@ -698,6 +705,11 @@ font: 9pt &quot;Consolas&quot;;</string>
   <action name="actionAxis">
    <property name="text">
     <string>Axis</string>
+   </property>
+  </action>
+  <action name="actionUser_Guide">
+   <property name="text">
+    <string>User Guide</string>
    </property>
   </action>
  </widget>
