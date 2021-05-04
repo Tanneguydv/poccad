@@ -66,15 +66,13 @@ display.DisplayShape(translated)\n'
 #BOOLEAN
 #---------------------
 
-def bool_cut(arg):
-    if arg == 'imp':
-        return 'from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Cut\n\
-from OCC.Core.Graphic3d import Graphic3d_NOM_STEEL\n\
-result = BRepAlgoAPI_Cut(basis, cutter).Shape()\n\
-display.DisplayShape(result, update=True, material=Graphic3d_NOM_STEEL)\n'
-    else :
-        return 'result = BRepAlgoAPI_Cut(basis, cutter).Shape()\n\
-display.DisplayShape(result, update=True, material=Graphic3d_NOM_STEEL)\n'
+class Boolean():
+
+    def bool_cut(name, basis, cutter):
+        method = str(name)+' = BRepAlgoAPI_Cut('+str(basis)+','+ str(cutter)+').Shape()\n\
+Shape'+str(name)+' =display.DisplayShape('+str(name)+', update=True, material=Graphic3d_NOM_STEEL)\n'
+        return method
+
 
 #---------------------
 #EXPORT
