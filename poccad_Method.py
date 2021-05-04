@@ -303,7 +303,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                     print(layername)
         cfe.close()
 
-
+        #get the print output in an exec statement
         try :
             @contextlib.contextmanager
             def stdoutIO(stdout=None):
@@ -359,12 +359,12 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         if state == 'on':
             if 'Shape' in layername :
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_on.png'))
-            elif 'Construction' in layername:
+            elif 'Point' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
         if state == 'off':
             if 'Shape' in layername :
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
-            elif 'Construction' in layername:
+            elif 'Point' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
 
     def change_layer_state(self, item):
@@ -483,7 +483,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
         self.ui.entryline.returnPressed.connect(send_param)
 
-    def makesphere(self):
+    def makesphere(self):#TODO ex method, to redefine
         if self.sphere == False :
             self.ui.OCCedit.appendPlainText(sc.make_sphere("imp"))
             self.sphere = True
@@ -504,13 +504,16 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                     else :
                         name = self.ui.entryline.text()
                     shapes = self.ui.treelayers.selectedItems()
-                    layer_basis = shapes[0].text(0)
-                    basis = str(layer_basis).strip('Shape')
+                    layer_basis = str(shapes[0].text(0))
+                    print(layer_basis)
+                    basis = layer_basis.replace('_Shape', '')
+                    print(basis)
                     layer_cutter = shapes[1].text(0)
-                    cutter = str(layer_cutter).strip('Shape')
+                    cutter = str(layer_cutter).replace('_Shape','')
                     if self.booleancut == False :
                         self.ui.OCCedit.appendPlainText('from OCC.Core.BRepAlgoAPI import BRepAlgoAPI_Cut\nfrom OCC.Core.Graphic3d import Graphic3d_NOM_STEEL\n')
                         self.ui.OCCedit.appendPlainText(Boolean.bool_cut(name, basis, cutter))
+                        self.booleancut = True
                     else :
                         self.ui.OCCedit.appendPlainText(Boolean.bool_cut(name, basis,cutter))
                     self.ui.entryline.clear()
@@ -525,7 +528,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     #Transformations
 
-    def translate(self):
+    def translate(self):#TODO ex method, to redefine
         if self.translate == False :
             self.ui.OCCedit.appendPlainText(sc.translate("imp"))
             self.translate = True
@@ -607,7 +610,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     #Exchange
 
-    def exportstep(self):
+    def exportstep(self):#TODO ex method, to redefine
         if self.expstep == False :
             self.ui.OCCedit.appendPlainText(sc.export_step("imp"))
             self.expstep = True
