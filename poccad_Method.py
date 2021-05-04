@@ -17,7 +17,6 @@ from PyQt5.QtWidgets import QApplication, QWidget, QPushButton, QHBoxLayout, QGr
 
 from OCC.Display.backend import load_backend
 load_backend('qt-pyqt5')
-
 import OCC.Display.qtDisplay as qtDisplay
 
 import lib.Scripts as sc
@@ -73,8 +72,8 @@ class Application(PyQt5.QtWidgets.QMainWindow):
 
         self.initialize()
         self.ui.OCCedit.setPlainText('from OCC.Extend.DataExchange import read_step_file\n\
-block_cylinder_shape = read_step_file("files\cylinder_block.stp")\n\
-display.DisplayShape(block_cylinder_shape, update=True)' )
+block_cylinder = read_step_file("files\cylinder_block.stp")\n\
+block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
         self.ui.output.appendPlainText('Press F5 to display the Pythonocc-demo step file')
         self.ui.OCCedit.textChanged.connect(self.changetext)
 
@@ -187,6 +186,15 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
         self.display.EraseAll()
         self.initialize()
         self.ui.output.appendPlainText('new codesheet')
+        # clear the tree layer
+        iterator = QTreeWidgetItemIterator(self.ui.treelayers, QTreeWidgetItemIterator.All)
+        while iterator.value():
+            iterator.value().takeChildren()
+            iterator += 1
+        i = self.ui.treelayers.topLevelItemCount()
+        while i > -1:
+            self.ui.treelayers.takeTopLevelItem(i)
+            i -= 1
 
     def open_file(self):
         self.initialize()
@@ -361,10 +369,14 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_on.png'))
             elif 'Point' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+            elif 'Axis' in layername:
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
         if state == 'off':
             if 'Shape' in layername :
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
             elif 'Point' in layername:
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+            elif 'Axis' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
 
     def change_layer_state(self, item):
@@ -406,25 +418,35 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     def makebox(self):
         self.makingbox = True
-        self.ui.output.appendPlainText('make box method : name;point;x,y,z')
+        self.ui.treelayers.clearSelection()
+        self.ui.output.appendPlainText('Select a reference point in [layers] and type : name;width,length,heigth')
         self.ui.entryline.setFocus()
         def send_param():
             self.ui.output.appendPlainText(self.ui.entryline.text())
             if self.makingbox == True :
                 try :
-                    if self.ui.entryline.text() == '' :
+                    shapes = self.ui.treelayers.selectedItems()
+                    if self.ui.entryline.text() == '' and len(shapes)==0 :
                         name = 'box'
                         point = 'gp_Pnt()'
                         settings = '10,10,10'
+                    elif self.ui.entryline.text() == '' and len(shapes) >0:
+                        name = 'box'
+                        layer_point = str(shapes[0].text(0))
+                        print(layer_point)
+                        point = layer_point.replace('_Point', '')
+                        settings = '10,10,10'
                     else :
-                        boxparam = self.ui.entryline.text().split(';', 2)
+                        boxparam = self.ui.entryline.text().split(';', 1)
                         name = boxparam[0]
                         if name == '':
                             name = 'box'
-                        point = boxparam[1]
+                        layer_point = str(shapes[0].text(0))
+                        print(layer_point)
+                        point = layer_point.replace('_Point', '')
                         if point == '':
                             point = 'gp_Pnt()'
-                        settings = boxparam[2]
+                        settings = boxparam[1]
                         if settings == '':
                             settings = '10,10,10'
                     if self.box == False :
@@ -444,26 +466,33 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     def makecylinder(self):
         self.makingcylinder = True
-        self.ui.output.appendPlainText('make cylinder method : name;axis;radius,length')
+        self.ui.treelayers.clearSelection()
+        self.ui.output.appendPlainText('Select a reference axis in [layers] and type : name;radius,length')
         self.ui.entryline.setFocus()
-
         def send_param():
             self.ui.output.appendPlainText(self.ui.entryline.text())
             if self.makingcylinder == True:
                 try:
-                    if self.ui.entryline.text() == '':
+                    shapes = self.ui.treelayers.selectedItems()
+                    if self.ui.entryline.text() == ''and len(shapes)==0 :
                         name = 'cylinder'
                         axis = 'gp_Ax2(gp_Pnt(0, 0, 5), gp_Dir(0, 0, 1))'
                         settings = '10,10'
+                    elif self.ui.entryline.text() == '' and len(shapes) > 0:
+                        name = 'cylinder'
+                        layer_axis = str(shapes[0].text(0))
+                        print(layer_axis)
+                        axis = layer_axis.replace('_Axis', '')
+                        settings = '10,10'
                     else:
-                        cylinderparam = self.ui.entryline.text().split(';', 2)
+                        cylinderparam = self.ui.entryline.text().split(';', 1)
                         name = cylinderparam[0]
                         if name == '':
                             name = 'cylinder'
-                        axis = cylinderparam[1]
-                        if axis == '':
-                            axis = 'gp_Ax2(gp_Pnt(0, 0, 5), gp_Dir(0, 0, 1))'
-                        settings = cylinderparam[2]
+                        layer_axis = str(shapes[0].text(0))
+                        print(layer_axis)
+                        axis = layer_axis.replace('_Axis', '')
+                        settings = cylinderparam[1]
                         if settings == '':
                             settings = '10,10'
                     if self.cylinder == False:
@@ -494,7 +523,7 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     def boolcut(self):
         self.boolingcut = True
-        self.ui.output.appendPlainText("select basis and cutter's layer , type name, and press OK")
+        self.ui.output.appendPlainText("select a basis and a cutter in [layers] and type a name then press OK")
         self.ui.entryline.setFocus()
         def send_param():
             if self.boolingcut == True:
@@ -572,36 +601,44 @@ display.DisplayShape(block_cylinder_shape, update=True)' )
 
     def drawaxis(self):
         self.drawingaxis = True
-        self.ui.output.appendPlainText('draw axis method : name;point;dirx, y, z')
+        self.ui.treelayers.clearSelection()
+        self.ui.output.appendPlainText('Select a reference point in [layers] and type : name;dirx, y, z')
         self.ui.entryline.setFocus()
-
         def send_param():
             self.ui.output.appendPlainText(self.ui.entryline.text())
             if self.drawingaxis == True:
                 try:
-                    if self.ui.entryline.text() == '':
+                    shapes = self.ui.treelayers.selectedItems()
+                    if self.ui.entryline.text() == ''and len(shapes)==0 :
                         name = 'axis'
                         point = 'gp_Pnt(0, 0, 0)'
-                        dir = '0,0,1'
+                        dir = '0,0,10'
+                    elif self.ui.entryline.text() == '' and len(shapes) > 0:
+                        name = 'axis'
+                        layer_point = str(shapes[0].text(0))
+                        print(layer_point)
+                        point = layer_point.replace('_Point', '')
+                        dir = '0,0,10'
                     else:
-                        param = self.ui.entryline.text().split(';', 2)
+                        param = self.ui.entryline.text().split(';', 1)
                         name = param[0]
                         if name == '':
                             name = 'axis'
-                        point = param[1]
-                        if point == '':
-                            point = 'gp_Pnt(0, 0, 0)'
-                        dir = param[2]
+                        layer_point = str(shapes[0].text(0))
+                        print(layer_point)
+                        point = layer_point.replace('_Point', '')
+                        dir = param[1]
                         if dir == '':
                             dir = '0,0,1'
                     if self.axis == False :
-                        self.ui.OCCedit.appendPlainText('from OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n')
+                        self.ui.OCCedit.appendPlainText('from OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\nfrom OCCUtils.Construct import make_edge')
                         self.ui.OCCedit.appendPlainText(Construction.draw_axis(name, point, dir))
-                        self.point = True
+                        self.axis = True
                     else :
                         self.ui.OCCedit.appendPlainText(Construction.draw_axis(name, point, dir))
                     self.ui.entryline.clear()
                     self.ui.output.appendPlainText('Rendering file...')
+                    self.render_file()
                     self.ui.OCCedit.setFocus()
                     self.drawingaxis = False
                 except Exception as e:
