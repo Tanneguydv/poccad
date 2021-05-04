@@ -4,12 +4,12 @@
 class Shape():
     def make_box(name, point, settings):
         method = str(name)+' = BRepPrimAPI_MakeBox('+str(point)+','+str(settings)+').Shape()\n\
-Shape'+str(name)+'= display.DisplayShape('+str(name)+')\n'
+'+str(name)+'_Shape = display.DisplayShape('+str(name)+')\n'
         return method
 
     def make_cylinder(name, axis, settings):
         method = str(name) + ' = BRepPrimAPI_MakeCylinder(' + str(axis) + ',' + str(settings) + ').Shape()\n\
-Shape' + str(name) + '= display.DisplayShape(' + str(name) + ')\n'
+' + str(name) + '_Shape = display.DisplayShape(' + str(name) + ')\n'
         return method
 
 def make_sphere(arg):
@@ -37,7 +37,7 @@ display.DisplayShape(sphere)\n'
 class Construction():
     def draw_point(name, settings):
         method = str(name) + ' = gp_Pnt(' + str(settings) + ')\n\
-Construction' + str(name) + '= display.DisplayShape(' + str(name) + ')\n'
+' + str(name) + '_Point = display.DisplayShape(' + str(name) + ')\n'
         return method
 
     def draw_axis(name, point, dir):
@@ -70,7 +70,7 @@ class Boolean():
 
     def bool_cut(name, basis, cutter):
         method = str(name)+' = BRepAlgoAPI_Cut('+str(basis)+','+ str(cutter)+').Shape()\n\
-Shape'+str(name)+' =display.DisplayShape('+str(name)+', update=True, material=Graphic3d_NOM_STEEL)\n'
+'+str(name)+'_Shape =display.DisplayShape('+str(name)+', update=True, material=Graphic3d_NOM_STEEL)\n'
         return method
 
 
