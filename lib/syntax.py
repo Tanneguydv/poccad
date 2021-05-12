@@ -36,7 +36,7 @@ STYLES = {
     'defclass': format('magenta', 'bold'),
     'string': format('green'),
     'string2': format('green'),
-    'comment': format('green', 'italic'),
+    'comment': format('Gray', 'italic'),
     'self': format('magenta', 'italic'),
     'numbers': format('lightblue'),
 }
