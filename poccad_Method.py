@@ -4,6 +4,7 @@ import os
 import os.path
 import sys
 import webbrowser
+import numpy
 from io import StringIO
 import contextlib
 import traceback
@@ -71,10 +72,6 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.render = False
 
         self.initialize()
-        self.ui.OCCedit.setPlainText('from OCC.Extend.DataExchange import read_step_file\n\
-block_cylinder = read_step_file("files\cylinder_block.stp")\n\
-block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
-        self.ui.output.appendPlainText('Press F5 to display the Pythonocc-demo step file')
         self.ui.OCCedit.textChanged.connect(self.changetext)
 
         self.ui.treeWidget.customContextMenuRequested.connect(self.on_contextmenu_tree)
@@ -85,6 +82,18 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
         self.load_project_structure(self.cwd, self.ui.treeWidget)
         self.ui.treeWidget.itemDoubleClicked.connect(self.show_consult)
         self.ui.treelayers.itemDoubleClicked.connect(self.change_layer_state)
+
+        self.lauching()
+
+    def lauching(self):
+        lauchingfile = 'files\\3planes.pocc'
+        with open (lauchingfile, 'r') as lf :
+            for line in lf.readlines():
+                if line == "\n":
+                    self.ui.OCCedit.appendPlainText((line.strip('\n')))
+                else :
+                    self.ui.OCCedit.appendPlainText((line.strip('\n')))
+        self.render_file()
 
     def user_guide_html(self):
         try :
@@ -183,6 +192,7 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
 
     def new_file(self):
         self.ui.OCCedit.clear()
+        self.ui.output.clear()
         self.display.EraseAll()
         self.initialize()
         self.ui.output.appendPlainText('new codesheet')
@@ -198,7 +208,8 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
 
     def open_file(self):
         self.initialize()
-        self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File to open',"","All Files (*);;pocc Files (*.pocc)")
+        self.ui.output.clear()
+        self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File to open',"","pocc Files (*.pocc);;All Files (*)")
         if self.occ_file_path:
             self.ui.output.appendPlainText('open ' + str(self.occ_file_path))
             self.file_issaved = True
@@ -371,12 +382,16 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
             elif 'Axis' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+            elif 'Plane' in layername:
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
         if state == 'off':
             if 'Shape' in layername :
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
             elif 'Point' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
             elif 'Axis' in layername:
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+            elif 'Plane' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
 
     def change_layer_state(self, item):
@@ -405,7 +420,7 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
                     elif line.startswith('display.FitAll()'):
                         pass
                     elif line == '\n':
-                        pass
+                        self.ui.OCCedit.appendPlainText(line.strip('\n'))
                     else:
                         self.ui.OCCedit.appendPlainText(line.strip('\n'))
 
@@ -417,52 +432,73 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
     #Shape
 
     def makebox(self):
-        self.makingbox = True
-        self.ui.treelayers.clearSelection()
-        self.ui.output.appendPlainText('Select a reference point in [layers] and type : name;width,length,heigth')
-        self.ui.entryline.setFocus()
+
+        def init():
+            self.makingbox = True
+            self.size_on = False
+            self.name_on = False
+            self.name = 'box'
+            self.point = 'gp_Pnt()'
+            self.settings = '10,10,10'
+            self.ui.treelayers.clearSelection()
+            self.ui.output.appendHtml('Press Enter or specify : <u>N</u>ame, <u>P</u>oint, <u>S</u>ize (width,length,heigth)')
+            self.ui.entryline.setFocus()
+
+        def param():
+            try :
+                if self.ui.entryline.text() == '':
+                    print('send')
+                    send_param()
+                elif self.ui.entryline.text() == 's':
+                    print('s')
+                    self.ui.output.appendHtml('Specify size')
+                    self.size_on = True
+                    self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'n':
+                    print('n')
+                    self.ui.output.appendHtml('Specify name')
+                    self.name_on = True
+                    self.ui.entryline.selectAll()
+                else :
+                    if self.size_on == True:
+                        print('s true')
+                        self.settings = self.ui.entryline.text()
+                        self.size_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(self.point) + ' , <u>S</u>ize : ' + str(
+                                self.settings))
+                        self.ui.entryline.selectAll()
+                    if self.name_on == True:
+                        print('n true')
+                        self.name = self.ui.entryline.text()
+                        self.name_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(self.point) + ' , <u>S</u>ize : ' + str(
+                                self.settings))
+                        self.ui.entryline.selectAll()
+            except Exception as e:
+                self.ui.output.appendPlainText(str(e))
+
         def send_param():
-            self.ui.output.appendPlainText(self.ui.entryline.text())
-            if self.makingbox == True :
+            if self.makingbox == True:
                 try :
-                    shapes = self.ui.treelayers.selectedItems()
-                    if self.ui.entryline.text() == '' and len(shapes)==0 :
-                        name = 'box'
-                        point = 'gp_Pnt()'
-                        settings = '10,10,10'
-                    elif self.ui.entryline.text() == '' and len(shapes) >0:
-                        name = 'box'
-                        layer_point = str(shapes[0].text(0))
-                        print(layer_point)
-                        point = layer_point.replace('_Point', '')
-                        settings = '10,10,10'
-                    else :
-                        boxparam = self.ui.entryline.text().split(';', 1)
-                        name = boxparam[0]
-                        if name == '':
-                            name = 'box'
-                        layer_point = str(shapes[0].text(0))
-                        print(layer_point)
-                        point = layer_point.replace('_Point', '')
-                        if point == '':
-                            point = 'gp_Pnt()'
-                        settings = boxparam[1]
-                        if settings == '':
-                            settings = '10,10,10'
-                    if self.box == False :
-                        self.ui.OCCedit.appendPlainText('from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox\nfrom OCC.Core.gp import gp_Pnt')
-                        self.ui.OCCedit.appendPlainText(Shape.make_box(name, point, settings))
+                    if self.box == False:
+                        self.ui.OCCedit.appendPlainText(
+                            'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox\nfrom OCC.Core.gp import gp_Pnt')
+                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.settings))
                         self.box = True
-                    else :
-                        self.ui.OCCedit.appendPlainText(Shape.make_box(name, point, settings))
+                    else:
+                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.settings))
                     self.ui.entryline.clear()
                     self.render_file()
                     self.ui.output.appendPlainText('Rendering file...')
                     self.ui.OCCedit.setFocus()
                     self.makingbox = False
-                except Exception as e :
-                    self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
-        self.ui.entryline.returnPressed.connect(send_param)
+                    self.ui.entryline.returnPressed.disconnect(param)
+                except Exception as e:
+                    print(str(e))
+        init()
+        self.ui.entryline.returnPressed.connect(param)
 
     def makecylinder(self):
         self.makingcylinder = True
@@ -471,6 +507,7 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
         self.ui.entryline.setFocus()
         def send_param():
             self.ui.output.appendPlainText(self.ui.entryline.text())
+            print('cylinder function')
             if self.makingcylinder == True:
                 try:
                     shapes = self.ui.treelayers.selectedItems()
@@ -501,16 +538,22 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
                         self.cylinder = True
                     else:
                         self.ui.OCCedit.appendPlainText(Shape.make_cylinder(name, axis, settings))
+                    self.makingcylinder = False
+                    print(self.makingcylinder)
                     self.ui.entryline.clear()
                     self.render_file()
                     self.ui.output.appendPlainText('Rendering file...')
                     self.ui.OCCedit.setFocus()
-                    self.makingcylinder = False
+                    self.ui.entryline.returnPressed.disconnect(send_param)
                 except Exception as e:
                     self.ui.output.appendPlainText(
                         str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
 
-        self.ui.entryline.returnPressed.connect(send_param)
+        if self.makingcylinder == True :
+            self.ui.entryline.returnPressed.connect(send_param)
+        else :
+            print('this is the end')
+            return None
 
     def makesphere(self):#TODO ex method, to redefine
         if self.sphere == False :
@@ -553,7 +596,6 @@ block_cylinder_Shape = display.DisplayShape(block_cylinder, update=True)' )
                 except Exception as e :
                     self.ui.Consult.appendPlainText(str(e))
         self.ui.entryline.returnPressed.connect(send_param)
-
 
     #Transformations
 

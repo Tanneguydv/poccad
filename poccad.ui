@@ -194,7 +194,11 @@ font: 9pt &quot;Consolas&quot;;</string>
              </widget>
             </item>
             <item>
-             <widget class="QLineEdit" name="entryline"/>
+             <widget class="QLineEdit" name="entryline">
+              <property name="clearButtonEnabled">
+               <bool>false</bool>
+              </property>
+             </widget>
             </item>
            </layout>
           </widget>
@@ -614,6 +618,9 @@ font: 9pt &quot;Consolas&quot;;</string>
      <strikeout>false</strikeout>
      <kerning>false</kerning>
     </font>
+   </property>
+   <property name="autoRepeat">
+    <bool>true</bool>
    </property>
   </action>
   <action name="actionOpen">
