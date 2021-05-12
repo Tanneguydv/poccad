@@ -1,0 +1,23 @@
+from OCC.Core.gp import gp_Vec, gp_Ax2, gp_Pnt, gp_Dir, gp_Pln, gp_Trsf
+from OCC.Core.BRepBuilderAPI import BRepBuilderAPI_MakeFace
+
+Dxy = gp_Dir(0., 0., 1.)
+Dxz = gp_Dir(0., 1., 0.)
+Dyz = gp_Dir(1., 0., 0.)
+P = gp_Pnt(0, 0, 0)	
+Pln_xy = gp_Pln(P, Dxy)
+Pln_xz = gp_Pln(P, Dxz)
+Pln_yz = gp_Pln(P, Dyz)
+
+face_xy = BRepBuilderAPI_MakeFace(Pln_xy, -10, 10, -10, 10).Face()
+face_xz = BRepBuilderAPI_MakeFace(Pln_xz, -10, 10, -10, 10).Face()
+face_yz = BRepBuilderAPI_MakeFace(Pln_yz, -10, 10, -10, 10).Face()
+
+Plane_xy = display.DisplayShape(face_xy)[0]
+display.Context.SetTransparency(Plane_xy, 0.8, True)
+Plane_xz = display.DisplayShape(face_xz)[0]
+display.Context.SetTransparency(Plane_xz, 0.8, True)
+Plane_yz = display.DisplayShape(face_yz)[0]
+display.Context.SetTransparency(Plane_yz, 0.8, True)
+
+
