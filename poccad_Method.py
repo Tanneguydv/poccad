@@ -384,6 +384,8 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
             elif 'Plane' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+            elif 'Curve' in layername:
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
         if state == 'off':
             if 'Shape' in layername :
                 displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
@@ -392,6 +394,8 @@ class Application(PyQt5.QtWidgets.QMainWindow):
             elif 'Axis' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
             elif 'Plane' in layername:
+                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+            elif 'Curve' in layername:
                 displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
 
     def change_layer_state(self, item):
