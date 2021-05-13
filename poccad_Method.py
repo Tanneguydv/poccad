@@ -86,7 +86,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.lauching()
 
     def lauching(self):
-        lauchingfile = 'files\\3planes.pocc'
+        lauchingfile = 'files\\3axis.pocc'
         with open (lauchingfile, 'r') as lf :
             for line in lf.readlines():
                 if line == "\n":
@@ -343,12 +343,12 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def dialog_about(self):
         infobox = QtWidgets.QDialog()
         infobox.setObjectName("infobox")
-        infobox.resize(671, 379)
+        infobox.resize(721, 379)
         icon = QtGui.QIcon()
         icon.addPixmap(QtGui.QPixmap("ui_files/icons/poccad.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         infobox.setWindowIcon(icon)
         self.logo = QtWidgets.QLabel(infobox)
-        self.logo.setGeometry(QtCore.QRect(20, 10, 631, 311))
+        self.logo.setGeometry(QtCore.QRect(10, 10, 701, 311))
         self.logo.setText("")
         self.logo.setPixmap(QtGui.QPixmap("readme_files/poccad_github.png"))
         self.logo.setScaledContents(True)
