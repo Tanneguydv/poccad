@@ -1,0 +1,8 @@
+from OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt
+from OCCUtils.Construct import make_edge
+Z = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0,0,10))
+Z_Axis = display.DisplayColoredShape(make_edge(gp_Pnt(0, 0, 0), gp_Pnt(0,0,10)), 'BLUE')
+Y = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0,10,0))
+Y_Axis = display.DisplayColoredShape(make_edge(gp_Pnt(0, 0, 0), gp_Pnt(0,10,0)), 'GREEN')
+X = gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(10,0,0))
+X_Axis = display.DisplayColoredShape(make_edge(gp_Pnt(0, 0, 0), gp_Pnt(10,0,0)), 'RED')
