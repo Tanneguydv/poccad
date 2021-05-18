@@ -441,21 +441,22 @@ class Application(PyQt5.QtWidgets.QMainWindow):
             self.makingbox = True
             self.size_on = False
             self.name_on = False
+            self.point_on = False
             self.name = 'box'
             self.point = 'gp_Pnt()'
-            self.settings = '10,10,10'
+            self.size = '10,10,10'
             self.ui.treelayers.clearSelection()
             self.ui.output.appendHtml('Press Enter or specify : <u>N</u>ame, <u>P</u>oint, <u>S</u>ize (width,length,heigth)')
             self.ui.entryline.setFocus()
 
         def param():
             try :
-                if self.ui.entryline.text() == '':
+                if self.ui.entryline.text() == '' and self.point_on == False: #what's to be selected in the tree layer must be False
                     print('send')
                     send_param()
                 elif self.ui.entryline.text() == 's':
                     print('s')
-                    self.ui.output.appendHtml('Specify size')
+                    self.ui.output.appendHtml('Specify size : x,y,z')
                     self.size_on = True
                     self.ui.entryline.selectAll()
                 elif self.ui.entryline.text() == 'n':
@@ -463,14 +464,19 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                     self.ui.output.appendHtml('Specify name')
                     self.name_on = True
                     self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'p':
+                    print('p')
+                    self.ui.output.appendPlainText('Choose a point in the layer tree or specify its coordinates')
+                    self.point_on = True
+                    self.ui.entryline.selectAll()
                 else :
                     if self.size_on == True:
                         print('s true')
-                        self.settings = self.ui.entryline.text()
+                        self.size = self.ui.entryline.text()
                         self.size_on = False
                         self.ui.output.appendHtml(
                             '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(self.point) + ' , <u>S</u>ize : ' + str(
-                                self.settings))
+                                self.size))
                         self.ui.entryline.selectAll()
                     if self.name_on == True:
                         print('n true')
@@ -478,8 +484,30 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                         self.name_on = False
                         self.ui.output.appendHtml(
                             '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(self.point) + ' , <u>S</u>ize : ' + str(
-                                self.settings))
+                                self.size))
                         self.ui.entryline.selectAll()
+                    if self.point_on == True :
+                        shapes = self.ui.treelayers.selectedItems()
+                        print('p true')
+                        print(shapes)
+                        if len(shapes) > 0:
+                            layer_point = str(shapes[0].text(0))
+                            print(layer_point)
+                            self.point = layer_point.replace('_Point', '')
+                            self.point_on = False
+                            self.ui.output.appendHtml(
+                                '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(
+                                    self.point) + ' , <u>S</u>ize : ' + str(
+                                    self.size))
+                            self.ui.entryline.selectAll()
+                        else :
+                            self.point = 'gp_Pnt('+ self.ui.entryline.text()+')'
+                            self.point_on = False
+                            self.ui.output.appendHtml(
+                                '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(
+                                    self.point) + ' , <u>S</u>ize : ' + str(
+                                    self.size))
+                            self.ui.entryline.selectAll()
             except Exception as e:
                 self.ui.output.appendPlainText(str(e))
 
@@ -489,10 +517,10 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                     if self.box == False:
                         self.ui.OCCedit.appendPlainText(
                             'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox\nfrom OCC.Core.gp import gp_Pnt')
-                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.settings))
+                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.size))
                         self.box = True
                     else:
-                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.settings))
+                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.size))
                     self.ui.entryline.clear()
                     self.render_file()
                     self.ui.output.appendPlainText('Rendering file...')
@@ -505,66 +533,239 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.entryline.returnPressed.connect(param)
 
     def makecylinder(self):
-        self.makingcylinder = True
-        self.ui.treelayers.clearSelection()
-        self.ui.output.appendPlainText('Select a reference axis in [layers] and type : name;radius,length')
-        self.ui.entryline.setFocus()
+
+        def init():
+            self.makingcylinder = True
+            self.size_on = False
+            self.name_on = False
+            self.axis_on = False
+            self.name = 'cylinder'
+            self.axis = 'gp_Ax2(gp_Pnt(0, 0, 5), gp_Dir(0, 0, 1))'
+            self.size = '10,10'
+            self.ui.treelayers.clearSelection()
+            self.ui.output.appendHtml('Press Enter or specify : <u>N</u>ame, <u>A</u>xis, <u>S</u>ize (radius,length)')
+            self.ui.entryline.setFocus()
+
+        def param():
+            try :
+                if self.ui.entryline.text() == '' and self.axis_on == False: #what's to be selected in the tree layer must be False
+                    print('send')
+                    send_param()
+                elif self.ui.entryline.text() == 's':
+                    print('s')
+                    self.ui.output.appendHtml('Specify size : radius,length')
+                    self.size_on = True
+                    self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'n':
+                    print('n')
+                    self.ui.output.appendHtml('Specify name')
+                    self.name_on = True
+                    self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'a':
+                    print('a')
+                    self.ui.output.appendPlainText('Choose an axis in the layer tree or specify its coordinates x,y,z;Dx,Dy,Dz')
+                    self.axis_on = True
+                    self.ui.entryline.selectAll()
+                else :
+                    if self.size_on == True:
+                        print('s true')
+                        self.size = self.ui.entryline.text()
+                        self.size_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(self.axis) + ' , <u>S</u>ize : ' + str(
+                                self.size))
+                        self.ui.entryline.selectAll()
+                    if self.name_on == True:
+                        print('n true')
+                        self.name = self.ui.entryline.text()
+                        self.name_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(self.axis) + ' , <u>S</u>ize : ' + str(
+                                self.size))
+                        self.ui.entryline.selectAll()
+                    if self.axis_on == True :
+                        shapes = self.ui.treelayers.selectedItems()
+                        print('a true')
+                        print(shapes)
+                        if len(shapes) > 0:
+                            layer_axis = str(shapes[0].text(0))
+                            print(layer_axis)
+                            self.axis = layer_axis.replace('_Axis', '')
+                            self.axis_on = False
+                            self.ui.output.appendHtml(
+                                '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(
+                                    self.axis) + ' , <u>S</u>ize : ' + str(
+                                    self.size))
+                            self.ui.entryline.selectAll()
+                        else :
+                            cylinderparam = self.ui.entryline.text().split(';', 1)
+                            point = cylinderparam[0]
+                            dir = cylinderparam[1]
+                            self.axis = 'gp_Pnt('+ point +'), gp_Dir('+ dir +')'
+                            self.axis_on = False
+                            self.ui.output.appendHtml(
+                                '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(
+                                    self.axis) + ' , <u>S</u>ize : ' + str(
+                                    self.size))
+                            self.ui.entryline.selectAll()
+            except Exception as e:
+                self.ui.output.appendPlainText(str(e))
+
         def send_param():
-            self.ui.output.appendPlainText(self.ui.entryline.text())
-            print('cylinder function')
             if self.makingcylinder == True:
-                try:
-                    shapes = self.ui.treelayers.selectedItems()
-                    if self.ui.entryline.text() == ''and len(shapes)==0 :
-                        name = 'cylinder'
-                        axis = 'gp_Ax2(gp_Pnt(0, 0, 5), gp_Dir(0, 0, 1))'
-                        settings = '10,10'
-                    elif self.ui.entryline.text() == '' and len(shapes) > 0:
-                        name = 'cylinder'
-                        layer_axis = str(shapes[0].text(0))
-                        print(layer_axis)
-                        axis = layer_axis.replace('_Axis', '')
-                        settings = '10,10'
-                    else:
-                        cylinderparam = self.ui.entryline.text().split(';', 1)
-                        name = cylinderparam[0]
-                        if name == '':
-                            name = 'cylinder'
-                        layer_axis = str(shapes[0].text(0))
-                        print(layer_axis)
-                        axis = layer_axis.replace('_Axis', '')
-                        settings = cylinderparam[1]
-                        if settings == '':
-                            settings = '10,10'
+                try :
                     if self.cylinder == False:
-                        self.ui.OCCedit.appendPlainText('from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder\nfrom OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n')
-                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(name, axis, settings))
+                        self.ui.OCCedit.appendPlainText(
+                            'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder\nfrom OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n')
+                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(self.name, self.axis, self.size))
                         self.cylinder = True
                     else:
-                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(name, axis, settings))
-                    self.makingcylinder = False
-                    print(self.makingcylinder)
+                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(self.name, self.axis, self.size))
                     self.ui.entryline.clear()
                     self.render_file()
                     self.ui.output.appendPlainText('Rendering file...')
                     self.ui.OCCedit.setFocus()
-                    self.ui.entryline.returnPressed.disconnect(send_param)
+                    self.makingcylinder = False
+                    self.ui.entryline.returnPressed.disconnect(param)
                 except Exception as e:
-                    self.ui.output.appendPlainText(
-                        str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
+                    print(str(e))
+        init()
+        self.ui.entryline.returnPressed.connect(param)
 
-        if self.makingcylinder == True :
-            self.ui.entryline.returnPressed.connect(send_param)
-        else :
-            print('this is the end')
-            return None
+    def makesphere(self):
 
-    def makesphere(self):#TODO ex method, to redefine
-        if self.sphere == False :
-            self.ui.OCCedit.appendPlainText(sc.make_sphere("imp"))
-            self.sphere = True
-        else :
-            self.ui.OCCedit.appendPlainText(sc.make_sphere(''))
+        def init():
+            self.makingsphere = True
+            self.radius_on = False
+            self.name_on = False
+            self.origin_on = False
+            self.angle_on = False
+            self.portion_on = False
+            self.radius = '5'
+            self.name = 'sphere'
+            self.origin = 'gp_Ax2(gp_Pnt(0, 0, 0), gp_Dir(0, 0, 1))'
+            self.angle = 'radians(90)'
+            self.portion = 'radians(360)'
+            self.ui.treelayers.clearSelection()
+            self.ui.output.appendHtml('Press Enter or specify : <u>N</u>ame, <u>O</u>rigin (point,dir), <u>R</u>adius, <u>A</u>ngle, <u>P</u>ortion')
+            self.ui.entryline.setFocus()
+
+        def param():
+            try :
+                if self.ui.entryline.text() == '' and self.origin_on == False: #what's to be selected in the tree layer must be False
+                    print('send')
+                    send_param()
+                elif self.ui.entryline.text() == 'r':
+                    print('r')
+                    self.ui.output.appendHtml('Specify radius')
+                    self.radius_on = True
+                    self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'n':
+                    print('n')
+                    self.ui.output.appendHtml('Specify name')
+                    self.name_on = True
+                    self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'o':
+                    print('o')
+                    self.ui.output.appendPlainText('Choose an axis in the layer tree or specify its coordinates x,y,z;Dx,Dy,Dz')
+                    self.origin_on = True
+                    self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'a':
+                    print('a')
+                    self.ui.output.appendPlainText('Specify the angle in degrees')
+                    self.angle_on = True
+                    self.ui.entryline.selectAll()
+                elif self.ui.entryline.text() == 'p':
+                    print('p')
+                    self.ui.output.appendPlainText('Specify the portion in degrees')
+                    self.portion_on = True
+                    self.ui.entryline.selectAll()
+                else :
+                    if self.radius_on == True:
+                        print('r true')
+                        self.radius = self.ui.entryline.text()
+                        self.radius_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>O</u>rigin : ' + str(
+                                self.origin)+ ' , <u>R</u>adius : ' + str(self.radius) + ' ,<u>A</u>ngle : ' + str(
+                                self.angle)+' ,<u>P</u>ortion : ' +str(self.portion))
+                        self.ui.entryline.selectAll()
+                    if self.name_on == True:
+                        print('n true')
+                        self.name = self.ui.entryline.text()
+                        self.name_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>O</u>rigin : ' + str(
+                                self.origin) + ' , <u>R</u>adius : ' + str(self.radius) + ' ,<u>A</u>ngle : ' + str(
+                                self.angle) + ' ,<u>P</u>ortion : ' + str(self.portion))
+                        self.ui.entryline.selectAll()
+                    if self.origin_on == True :
+                        shapes = self.ui.treelayers.selectedItems()
+                        print('o true')
+                        print(shapes)
+                        if len(shapes) > 0:
+                            layer_axis = str(shapes[0].text(0))
+                            print(layer_axis)
+                            self.origin = layer_axis.replace('_Axis', '')
+                            self.origin_on = False
+                            self.ui.output.appendHtml(
+                                '<u>N</u>ame : ' + str(self.name) + ' , <u>O</u>rigin : ' + str(
+                                    self.origin) + ' , <u>R</u>adius : ' + str(self.radius) + ' ,<u>A</u>ngle : ' + str(
+                                    self.angle) + ' ,<u>P</u>ortion : ' + str(self.portion))
+                            self.ui.entryline.selectAll()
+                        else :
+                            sphereparam = self.ui.entryline.text().split(';', 1)
+                            point = sphereparam[0]
+                            dir = sphereparam[1]
+                            self.origin = 'gp_Pnt('+ point +'), gp_Dir('+ dir +')'
+                            self.origin_on = False
+                            self.ui.output.appendHtml(
+                                '<u>N</u>ame : ' + str(self.name) + ' , <u>O</u>rigin : ' + str(
+                                    self.origin) + ' , <u>R</u>adius : ' + str(self.radius) + ' ,<u>A</u>ngle : ' + str(
+                                    self.angle) + ' ,<u>P</u>ortion : ' + str(self.portion))
+                            self.ui.entryline.selectAll()
+                    if self.angle_on == True:
+                        print('a true')
+                        self.angle = 'radians('+ self.ui.entryline.text() +')'
+                        self.angle_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>O</u>rigin : ' + str(
+                                self.origin) + ' , <u>R</u>adius : ' + str(self.radius) + ' ,<u>A</u>ngle : ' + str(
+                                self.angle) + ' ,<u>P</u>ortion : ' + str(self.portion))
+                        self.ui.entryline.selectAll()
+                    if self.portion_on == True:
+                        print('p true')
+                        self.portion = 'radians('+ self.ui.entryline.text() +')'
+                        self.portion_on = False
+                        self.ui.output.appendHtml(
+                            '<u>N</u>ame : ' + str(self.name) + ' , <u>O</u>rigin : ' + str(
+                                self.origin) + ' , <u>R</u>adius : ' + str(self.radius) + ' ,<u>A</u>ngle : ' + str(
+                                self.angle) + ' ,<u>P</u>ortion : ' + str(self.portion))
+                        self.ui.entryline.selectAll()
+            except Exception as e:
+                self.ui.output.appendPlainText(str(e))
+
+        def send_param():
+            if self.makingsphere == True:
+                try :
+                    if self.sphere == False:
+                        self.ui.OCCedit.appendPlainText('from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeSphere\n\
+from OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n\
+from math import radians\n')
+                        self.ui.OCCedit.appendPlainText(Shape.make_sphere(self.name, self.origin ,self.radius, self.angle, self.portion))
+                        self.sphere = True
+                    else:
+                        self.ui.OCCedit.appendPlainText(Shape.make_sphere(self.name, self.origin , self.radius, self.angle, self.portion))
+                    self.ui.entryline.clear()
+                    self.render_file()
+                    self.ui.output.appendPlainText('Rendering file...')
+                    self.ui.OCCedit.setFocus()
+                    self.makingsphere = False
+                    self.ui.entryline.returnPressed.disconnect(param)
+                except Exception as e:
+                    print(str(e))
+        init()
+        self.ui.entryline.returnPressed.connect(param)
 
     #Boolean
 
@@ -641,6 +842,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                     self.ui.output.appendPlainText('Rendering file...')
                     self.ui.OCCedit.setFocus()
                     self.drawingpoint = False
+                    self.ui.entryline.returnPressed.disconnect(send_param)
                 except Exception as e:
                     self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
         self.ui.entryline.returnPressed.connect(send_param)
@@ -687,6 +889,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                     self.render_file()
                     self.ui.OCCedit.setFocus()
                     self.drawingaxis = False
+                    self.ui.entryline.returnPressed.disconnect(send_param)
                 except Exception as e:
                     self.ui.output.appendPlainText(str(e) + '\nTry with the method rule specified above (at list the good number of ";"')
         self.ui.entryline.returnPressed.connect(send_param)
