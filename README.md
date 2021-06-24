@@ -25,8 +25,8 @@ Requires : pythonocc-core and PyQt5. Installation guide will be add soon, but yo
 Execute `poccad_launcher.py` to get started
 
 **New ui design and functions, readme update coming soon**
+![image](https://user-images.githubusercontent.com/81742654/123293323-2dd61880-d514-11eb-842c-9e7d2c398b6c.png)
 
-![20210430_new-ui](https://user-images.githubusercontent.com/81742654/116717430-29402880-a9d9-11eb-8fe0-323d050dfb1e.jpg)
 
 # Examples from the previous UI :
 
