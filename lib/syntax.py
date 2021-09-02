@@ -52,7 +52,7 @@ class PythonHighlighter(QSyntaxHighlighter):
         'for', 'from', 'global', 'if', 'import', 'in',
         'is', 'lambda', 'not', 'or', 'pass', 'print',
         'raise', 'return', 'try', 'while', 'yield',
-        'None', 'True', 'False',
+        'None', 'True', 'False', 'with', 'as', 'str'
     ]
 
     # Python operators
