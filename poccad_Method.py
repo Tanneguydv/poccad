@@ -23,7 +23,9 @@ import OCC.Display.qtDisplay as qtDisplay
 import lib.Scripts as sc
 from lib.Scripts import Shape, Construction, Boolean
 from poccad import Ui_poccad
-
+from lib.Shapemaker import MakeShape
+from lib.Shapemaker import *
+import lib.OCC_functions as occ
 
 class Application(PyQt5.QtWidgets.QMainWindow):
 
@@ -39,6 +41,7 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.canvas.resize(829,739)
         self.canvas.InitDriver()
         self.display = self.canvas._display
+        self.shape_converter = ShapeConverter()
 
         #ASSOCIATE Functions to display
         self.ui.render_button.clicked.connect(self.render_file)
@@ -49,6 +52,9 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.ui.rightview_button.clicked.connect(lambda: self.setview('Right'))
         self.ui.bottomview_button.clicked.connect(lambda: self.setview('Bottom'))
         self.ui.rearview_button.clicked.connect(lambda: self.setview('Rear'))
+
+        self.ui.set_active_layer_button.clicked.connect(self.set_active_layer)
+        self.ui.create_layer_button.clicked.connect(self.create_layer)
 
         self.ui.actionNew.triggered.connect(self.new_file)
         self.ui.actionOpen.triggered.connect(self.open_file)
@@ -74,19 +80,17 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.initialize()
         self.ui.OCCedit.textChanged.connect(self.changetext)
 
-        self.ui.treeWidget.customContextMenuRequested.connect(self.on_contextmenu_tree)
-        self.popTreeMenu = QtWidgets.QMenu(self)
-        self.popTreeMenu.addAction("double click to display in 'Consult' Tab")
-
         self.cwd = os.getcwd()
-        self.load_project_structure(self.cwd, self.ui.treeWidget)
-        self.ui.treeWidget.itemDoubleClicked.connect(self.show_consult)
+
         self.ui.treelayers.itemDoubleClicked.connect(self.change_layer_state)
+        self.ui.treelayers.itemSelectionChanged.connect(self.on_item_selection_changed)
+
+
 
         self.lauching()
 
     def lauching(self):
-        lauchingfile = 'files\\3axis.pocc'
+        lauchingfile = 'files/3axis.pocc'
         with open (lauchingfile, 'r') as lf :
             for line in lf.readlines():
                 if line == "\n":
@@ -104,69 +108,6 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def on_contextmenu_tree(self, point):
         self.popTreeMenu.exec_(self.ui.treeWidget.mapToGlobal(point))
 
-    def show_consult(self, item):
-
-        file = item.text(0)
-        dir =  ([node.text(0) for node in self.getParents(item)])
-        length = len(dir)
-        if dir :
-            if length == 6 :
-                print(str(dir[5])+ '\\' +str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[5])+ '\\' +str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
-            if length == 5 :
-                print(str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[4])+ '\\' +str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
-            if length == 4 :
-                print(str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[3])+ '\\' + str(dir[2]) + '\\'+str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
-            if length == 3 :
-                print(str(dir[2])+ '\\' +str(dir[1])+ '\\' +str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[2])+ '\\' +str(dir[1])+ '\\' +str(dir[0]) + '\\'+ str(file)
-            if length == 2 :
-                print(str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[1])+ '\\' + str(dir[0]) + '\\'+ str(file)
-            if length == 1 :
-                print(str(dir[0]) + '\\'+ str(file))
-                consult_file = str(dir[0]) +'\\' + str(file)
-        else :
-            print (str(file))
-            consult_file = (str(file))
-        self.ui.Consult.clear()
-        if 'html' in consult_file:
-            html_file = os.path.abspath(consult_file)
-            print(html_file)
-            webbrowser.open_new_tab(html_file)
-        else :
-            with open (consult_file , 'r') as cf:
-                for line in cf :
-                    self.ui.Consult.appendPlainText(line.strip('\n'))
-
-    def getParents(self, item):
-        """
-        Return a list containing all parent items of this item.
-        The list is empty, if the item is a root item.
-        """
-        parents = []
-        current_item = item
-        current_parent = current_item.parent()
-
-        # Walk up the tree and collect all parent items of this item
-        while not current_parent is None:
-            parents.append(current_parent)
-            current_item = current_parent
-            current_parent = current_item.parent()
-        return parents
-
-    def load_project_structure(self, startpath, tree):
-        for element in os.listdir(startpath):
-            path_info = startpath + "/" + element
-            parent_itm = QTreeWidgetItem(tree, [os.path.basename(element)])
-            if os.path.isdir(path_info):
-                self.load_project_structure(path_info, parent_itm)
-                parent_itm.setIcon(0, QIcon('ui_files\icons\dir.png'))
-            else:
-                parent_itm.setIcon(0, QIcon('ui_files\icons\\file.png'))
-
     def changetext(self):
         if self.ui.OCCedit.toPlainText().endswith(':\n'):
             self.ui.OCCedit.insertPlainText('\t')
@@ -183,9 +124,12 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         self.translate = False
         self.expstep = False
         self.file_issaved = False
+        self.selected_item = "base_layer"
+        self.set_active_layer()
+        # self.active_layer = ["base_layer" , False]
 
     def setview(self, view):
-        self.ui.activeview.setPixmap(QPixmap('ui_files\icons\\'+ (view) + '_on.png'))
+        self.ui.activeview.setPixmap(QPixmap('ui_files/icons/'+ (view) + '_on.png'))
         dispview = 'self.display.View_' + (view)+'()'
         exec (dispview)
         self.display.FitAll()
@@ -209,7 +153,9 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def open_file(self):
         self.initialize()
         self.ui.output.clear()
-        self.occ_file_path, _ = PyQt5.QtWidgets.QFileDialog.getOpenFileName(self, 'Select File to open',"","pocc Files (*.pocc);;All Files (*)")
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        self.occ_file_path, _ = QFileDialog.getOpenFileName(parent=self, caption='Select File to open',dir='',filter="pocc Files (*.pocc);;All Files (*)", options=options)
         if self.occ_file_path:
             self.ui.output.appendPlainText('open ' + str(self.occ_file_path))
             self.file_issaved = True
@@ -255,7 +201,6 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                         cfe.writelines(line)
         else :
             pass
-        self.load_project_structure(self.cwd, self.ui.treeWidget)
 
     def export_file(self):
         options = QFileDialog.Options()
@@ -278,7 +223,6 @@ class Application(PyQt5.QtWidgets.QMainWindow):
 
         else :
             pass
-        self.load_project_structure(self.cwd, self.ui.treeWidget)
         
     def render_file(self):
         print('render')
@@ -295,20 +239,32 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         if os.path.isfile("cad_file_edit.pocc"):
             os.remove("cad_file_edit.pocc")
         self.display.EraseAll()
-        cad_edit = self.ui.OCCedit.toPlainText()
+        cad_edit_text = self.ui.OCCedit.toPlainText()
+        cad_edit = cad_edit_text.splitlines()
         with open ("cad_file_edit.pocc", "a") as cfe :
+            final_layers_show = []
             cfe.write("display = self.display\n")
             for line in cad_edit:
                 if line.startswith("display = self.") :
                     pass
                 elif line.startswith('display.FitAll()'):
                     pass
+                elif 'layer' in line and ".show" in line:
+                    print("cad edit ", line)
+                    final_layers_show.append(line)
+                elif 'layer' in line and ".hide" in line:
+                    final_layers_show.append(line)
                 else :
-                    cfe.writelines(line)
+                    print(line)
+                    cfe.writelines(line + '\n')
+            for line in final_layers_show:
+                print("final_layers_show  ", line)
+                cfe.writelines(line + '\n')
             cfe.write('\ndisplay.FitAll()')
         cfe.close()
 
         with open ("cad_file_edit.pocc", "r") as cfe :
+            layers = []
             lines = cfe.readlines()
             for line in lines:
                 if 'display.Display' in line :
@@ -320,6 +276,42 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                     else :
                         self.load_tree_layers(layername, 'on')
                     print(layername)
+                elif 'layer' in line and '=' in line: #TODO ne sert à rien pour le moment
+                    layer = line.split(' =', 1)
+                    layername = layer[0]
+                    layers.append([layername, 'on'])
+                    # self.load_tree_layers(layername, 'on')
+                # elif 'layer' in line and ".show" in line:
+                #     layer = line.split('.', 1)
+                #     layername = layer[0]
+                #     self.load_tree_layers(layername, 'on')
+                #     print(layername)
+                elif 'layer' in line and ".hide" in line:
+                    layer = line.split('.', 1)
+                    layername = layer[0]
+                    for layer in layers:
+                        if layer[0] == layername:
+                            layer[1] = 'off' 
+                    # layers.append([layername, 'off'])
+                    # self.load_tree_layers(layername, 'off')
+                    # print(layername)
+            for layername in layers:
+                self.load_tree_layers(layername[0], layername[1])
+        cfe.close()
+
+        # refresh occedit
+        with open ("cad_file_edit.pocc", "r") as cfe :
+            self.ui.OCCedit.clear()
+            lines = cfe.readlines()
+            for line in lines:
+                if "display = self." in line :
+                    pass
+                elif line.startswith('display.FitAll()'):
+                    pass
+                elif line == '\n':
+                    pass
+                else:
+                    self.ui.OCCedit.appendPlainText(line.strip('\n'))
         cfe.close()
 
         #get the print output in an exec statement
@@ -376,27 +368,27 @@ class Application(PyQt5.QtWidgets.QMainWindow):
     def load_tree_layers(self, layername, state):
         displaylayer = QTreeWidgetItem(self.ui.treelayers, [layername])
         if state == 'on':
-            if 'Shape' in layername :
-                displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_on.png'))
+            if 'layer' in layername :
+                displaylayer.setIcon(0, QIcon('ui_files/icons/shape_layer_on.png'))
             elif 'Point' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_on.png'))
             elif 'Axis' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_on.png'))
             elif 'Plane' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_on.png'))
             elif 'Curve' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_on.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_on.png'))
         if state == 'off':
-            if 'Shape' in layername :
-                displaylayer.setIcon(0, QIcon('ui_files\icons\shape_layer_off.png'))
+            if 'layer' in layername :
+                displaylayer.setIcon(0, QIcon('ui_files/icons/shape_layer_off.png'))
             elif 'Point' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_off.png'))
             elif 'Axis' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_off.png'))
             elif 'Plane' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_off.png'))
             elif 'Curve' in layername:
-                displaylayer.setIcon(0, QIcon('ui_files\icons\construction_layer_off.png'))
+                displaylayer.setIcon(0, QIcon('ui_files/icons/construction_layer_off.png'))
 
     def change_layer_state(self, item):
         print (item)
@@ -418,6 +410,17 @@ class Application(PyQt5.QtWidgets.QMainWindow):
                             self.ui.OCCedit.appendPlainText(line.strip('\n'))
                     else :
                         self.ui.OCCedit.appendPlainText(line.strip('\n'))
+                elif 'layer' in line :
+                    layer = layer.replace(" ", "")
+                    if str(layer) in line :                        
+                        if 'show' in line:
+                            line = line.replace('show', 'hide')
+                            self.ui.OCCedit.appendPlainText(line.strip('\n'))
+                        else :
+                            line = line.replace('hide', 'show')
+                            self.ui.OCCedit.appendPlainText(line.strip('\n'))
+                    else :
+                        self.ui.OCCedit.appendPlainText(line.strip('\n'))
                 else :
                     if "display = self." in line :
                         pass
@@ -431,207 +434,79 @@ class Application(PyQt5.QtWidgets.QMainWindow):
         cfe.close()
         self.render_file()
 
+    def on_item_selection_changed(self):
+        selected_items = self.ui.treelayers.selectedItems()
+        if selected_items:
+            selected_item = selected_items[0]  # Prendre le premier élément sélectionné
+            self.selected_item =  str(selected_item.text(0))
+            print("Nom:", selected_item.text(0))
+
+    def set_active_layer(self):
+        print(self.selected_item)
+        if "layer" in self.selected_item:
+            layer = self.selected_item
+            print("layer = ", layer)
+        else:
+            layer = "base_layer" 
+        self.active_layer = [layer, False] 
+        print(self.active_layer)
+        self.ui.active_layer_label.setText("active layer is " + str(self.active_layer[0]))
+
+    def create_layer(self):
+        dialog = CreateLayerDialog()
+        name, color, transparency = dialog.get_user_input()
+        line = name + "_layer = occ.Layer(display, color=" + str(color) + ", transparency=" + str(transparency) + ")"
+        self.ui.OCCedit.appendPlainText(line)
+        self.render_file()
+
+    def add_shape_to_layer(self, shape_name):
+        # active_layer = self.get_active_layer()
+        self.ui.OCCedit.appendPlainText(self.active_layer[0] + '.add_shape(' + shape_name + ')')
+        if not self.active_layer[1]:
+            self.ui.OCCedit.appendPlainText(self.active_layer[0] + '.show()')
+            self.active_layer[1] = True
 
     #PythonOCC functions :
+
+    def make_maker(self, maker):
+        # widget = ShapeMakerDialog(maker.parameters)
+        # self.ui.shape_maker_layout.addWidget(widget)
+        self.ui.tabWidget.setCurrentIndex(2)
+        dialog = ShapeMakerDialog(maker, self.display)
+        self.ui.shape_maker_layout.addWidget(dialog)
+        result = dialog.exec_()
+
+        if result == QDialog.Accepted:
+            line_input = dialog.get_input()
+            print(f'line entered: {line_input}')
+
+        # make_box = CenterPoint()
+        print(maker.generate_prompt())
+
+
+        command = maker.generate_command(line_input)
+        self.ui.OCCedit.appendPlainText(command)
+        print(command)
+        shape_name = command.split(" =")[0]
+        self.add_shape_to_layer(shape_name)
+        self.ui.entryline.clear()
+        self.render_file()
+        self.ui.output.appendPlainText('Rendering file...')
+        self.ui.OCCedit.setFocus()
     #Shape
 
+    def center_point_face(self):
+        maker = CenterPoint()
+        self.make_maker(maker)
+
     def makebox(self):
-
-        def init():
-            self.makingbox = True
-            self.size_on = False
-            self.name_on = False
-            self.point_on = False
-            self.name = 'box'
-            self.point = 'gp_Pnt()'
-            self.size = '10,10,10'
-            self.ui.treelayers.clearSelection()
-            self.ui.output.appendHtml('Press Enter or specify : <u>N</u>ame, <u>P</u>oint, <u>S</u>ize (width,length,heigth)')
-            self.ui.entryline.setFocus()
-
-        def param():
-            try :
-                if self.ui.entryline.text() == '' and self.point_on == False: #what's to be selected in the tree layer must be False
-                    print('send')
-                    send_param()
-                elif self.ui.entryline.text() == 's':
-                    print('s')
-                    self.ui.output.appendHtml('Specify size : x,y,z')
-                    self.size_on = True
-                    self.ui.entryline.selectAll()
-                elif self.ui.entryline.text() == 'n':
-                    print('n')
-                    self.ui.output.appendHtml('Specify name')
-                    self.name_on = True
-                    self.ui.entryline.selectAll()
-                elif self.ui.entryline.text() == 'p':
-                    print('p')
-                    self.ui.output.appendPlainText('Choose a point in the layer tree or specify its coordinates')
-                    self.point_on = True
-                    self.ui.entryline.selectAll()
-                else :
-                    if self.size_on == True:
-                        print('s true')
-                        self.size = self.ui.entryline.text()
-                        self.size_on = False
-                        self.ui.output.appendHtml(
-                            '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(self.point) + ' , <u>S</u>ize : ' + str(
-                                self.size))
-                        self.ui.entryline.selectAll()
-                    if self.name_on == True:
-                        print('n true')
-                        self.name = self.ui.entryline.text()
-                        self.name_on = False
-                        self.ui.output.appendHtml(
-                            '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(self.point) + ' , <u>S</u>ize : ' + str(
-                                self.size))
-                        self.ui.entryline.selectAll()
-                    if self.point_on == True :
-                        shapes = self.ui.treelayers.selectedItems()
-                        print('p true')
-                        print(shapes)
-                        if len(shapes) > 0:
-                            layer_point = str(shapes[0].text(0))
-                            print(layer_point)
-                            self.point = layer_point.replace('_Point', '')
-                            self.point_on = False
-                            self.ui.output.appendHtml(
-                                '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(
-                                    self.point) + ' , <u>S</u>ize : ' + str(
-                                    self.size))
-                            self.ui.entryline.selectAll()
-                        else :
-                            self.point = 'gp_Pnt('+ self.ui.entryline.text()+')'
-                            self.point_on = False
-                            self.ui.output.appendHtml(
-                                '<u>N</u>ame : ' + str(self.name) + ' , <u>P</u>oint : ' + str(
-                                    self.point) + ' , <u>S</u>ize : ' + str(
-                                    self.size))
-                            self.ui.entryline.selectAll()
-            except Exception as e:
-                self.ui.output.appendPlainText(str(e))
-
-        def send_param():
-            if self.makingbox == True:
-                try :
-                    if self.box == False:
-                        self.ui.OCCedit.appendPlainText(
-                            'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeBox\nfrom OCC.Core.gp import gp_Pnt')
-                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.size))
-                        self.box = True
-                    else:
-                        self.ui.OCCedit.appendPlainText(Shape.make_box(self.name, self.point, self.size))
-                    self.ui.entryline.clear()
-                    self.render_file()
-                    self.ui.output.appendPlainText('Rendering file...')
-                    self.ui.OCCedit.setFocus()
-                    self.makingbox = False
-                    self.ui.entryline.returnPressed.disconnect(param)
-                except Exception as e:
-                    print(str(e))
-        init()
-        self.ui.entryline.returnPressed.connect(param)
+        maker = MakeBox()
+        self.make_maker(maker)
 
     def makecylinder(self):
-
-        def init():
-            self.makingcylinder = True
-            self.size_on = False
-            self.name_on = False
-            self.axis_on = False
-            self.name = 'cylinder'
-            self.axis = 'gp_Ax2(gp_Pnt(0, 0, 5), gp_Dir(0, 0, 1))'
-            self.size = '10,10'
-            self.ui.treelayers.clearSelection()
-            self.ui.output.appendHtml('Press Enter or specify : <u>N</u>ame, <u>A</u>xis, <u>S</u>ize (radius,length)')
-            self.ui.entryline.setFocus()
-
-        def param():
-            try :
-                if self.ui.entryline.text() == '' and self.axis_on == False: #what's to be selected in the tree layer must be False
-                    print('send')
-                    send_param()
-                elif self.ui.entryline.text() == 's':
-                    print('s')
-                    self.ui.output.appendHtml('Specify size : radius,length')
-                    self.size_on = True
-                    self.ui.entryline.selectAll()
-                elif self.ui.entryline.text() == 'n':
-                    print('n')
-                    self.ui.output.appendHtml('Specify name')
-                    self.name_on = True
-                    self.ui.entryline.selectAll()
-                elif self.ui.entryline.text() == 'a':
-                    print('a')
-                    self.ui.output.appendPlainText('Choose an axis in the layer tree or specify its coordinates x,y,z;Dx,Dy,Dz')
-                    self.axis_on = True
-                    self.ui.entryline.selectAll()
-                else :
-                    if self.size_on == True:
-                        print('s true')
-                        self.size = self.ui.entryline.text()
-                        self.size_on = False
-                        self.ui.output.appendHtml(
-                            '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(self.axis) + ' , <u>S</u>ize : ' + str(
-                                self.size))
-                        self.ui.entryline.selectAll()
-                    if self.name_on == True:
-                        print('n true')
-                        self.name = self.ui.entryline.text()
-                        self.name_on = False
-                        self.ui.output.appendHtml(
-                            '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(self.axis) + ' , <u>S</u>ize : ' + str(
-                                self.size))
-                        self.ui.entryline.selectAll()
-                    if self.axis_on == True :
-                        shapes = self.ui.treelayers.selectedItems()
-                        print('a true')
-                        print(shapes)
-                        if len(shapes) > 0:
-                            layer_axis = str(shapes[0].text(0))
-                            print(layer_axis)
-                            self.axis = layer_axis.replace('_Axis', '')
-                            self.axis_on = False
-                            self.ui.output.appendHtml(
-                                '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(
-                                    self.axis) + ' , <u>S</u>ize : ' + str(
-                                    self.size))
-                            self.ui.entryline.selectAll()
-                        else :
-                            cylinderparam = self.ui.entryline.text().split(';', 1)
-                            point = cylinderparam[0]
-                            dir = cylinderparam[1]
-                            self.axis = 'gp_Pnt('+ point +'), gp_Dir('+ dir +')'
-                            self.axis_on = False
-                            self.ui.output.appendHtml(
-                                '<u>N</u>ame : ' + str(self.name) + ' , <u>A</u>xis : ' + str(
-                                    self.axis) + ' , <u>S</u>ize : ' + str(
-                                    self.size))
-                            self.ui.entryline.selectAll()
-            except Exception as e:
-                self.ui.output.appendPlainText(str(e))
-
-        def send_param():
-            if self.makingcylinder == True:
-                try :
-                    if self.cylinder == False:
-                        self.ui.OCCedit.appendPlainText(
-                            'from OCC.Core.BRepPrimAPI import BRepPrimAPI_MakeCylinder\nfrom OCC.Core.gp import gp_Ax2 , gp_Dir , gp_Pnt\n')
-                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(self.name, self.axis, self.size))
-                        self.cylinder = True
-                    else:
-                        self.ui.OCCedit.appendPlainText(Shape.make_cylinder(self.name, self.axis, self.size))
-                    self.ui.entryline.clear()
-                    self.render_file()
-                    self.ui.output.appendPlainText('Rendering file...')
-                    self.ui.OCCedit.setFocus()
-                    self.makingcylinder = False
-                    self.ui.entryline.returnPressed.disconnect(param)
-                except Exception as e:
-                    print(str(e))
-        init()
-        self.ui.entryline.returnPressed.connect(param)
-
+        maker = MakeCylinder()
+        self.make_maker(maker)
+        
     def makesphere(self):
 
         def init():
@@ -903,3 +778,142 @@ from math import radians\n')
         else :
             self.ui.OCCedit.appendPlainText(sc.export_step(''))
 
+class ShapeMakerDialog(QDialog):
+    def __init__(self, maker, display):
+        super().__init__()
+        self.parameters = maker.parameters
+        self.display = display
+        self.to_pick = None
+        self.shape_converter = ShapeConverter()
+        self.shapemaker = maker
+        self.initUI()
+
+    def initUI(self):
+        self.layout = QVBoxLayout()
+
+        self.param_labels = {}
+        self.param_lineedits = {}
+        self.param_buttons = {}
+        self.result_text = QtWidgets.QLabel() #QTextEdit()
+        self.layout.addWidget(self.result_text)
+
+        # Créer des champs de saisie pour chaque paramètre
+        for param_name, param_type in self.parameters.items():
+            if "pick" in param_name:
+                if "pnt" in param_name:
+                    self.display.SetSelectionModeVertex()
+                    self.to_pick = "pnt"
+                elif "face" in param_name:
+                    self.display.SetSelectionModeFace()
+                    self.to_pick = "face"
+                elif "edge" in param_name:
+                    self.display.SetSelectionModeEdge()
+                    self.to_pick = "edge"
+                self.pick_param_name = param_name
+                label = QtWidgets.QLabel(f'{param_name}:')
+                line_edit = QtWidgets.QLineEdit()
+                button_pick = QtWidgets.QPushButton('pick shape')
+                button_pick.clicked.connect(self.get_picked_shape)
+                self.param_labels[param_name] = label
+                self.param_lineedits[param_name] = line_edit
+                self.param_buttons[param_name] = button_pick
+                self.layout.addWidget(label)
+                self.layout.addWidget(line_edit)
+                self.layout.addWidget(button_pick)
+            else:
+                label = QtWidgets.QLabel(f'{param_name}:')
+                line_edit = QtWidgets.QLineEdit()
+                self.param_labels[param_name] = label
+                self.param_lineedits[param_name] = line_edit
+                self.layout.addWidget(label)
+                self.layout.addWidget(line_edit)
+
+        submit_button = QPushButton("Create Shape")
+        submit_button.clicked.connect(self.create_shape)
+        self.layout.addWidget(submit_button)
+
+        ok_button = QPushButton("OK")
+        ok_button.clicked.connect(self.accept)  # Ferme la boîte de dialogue avec QDialog.Accepted
+        self.layout.addWidget(ok_button)
+
+        self.setLayout(self.layout)
+        self.setWindowTitle('Shape Maker')
+
+    def get_picked_shape(self):
+        if self.display.GetSelectedShape():
+            if self.to_pick == "pnt":
+                vertex = self.display.GetSelectedShape()
+                gp_pnt = occ.BRep_Tool.Pnt(vertex)
+                self.gp_pnt_coord = gp_pnt.Coord()
+                self.param_lineedits[self.pick_param_name].setText("gp_Pnt"+str(self.gp_pnt_coord))
+            elif self.to_pick == "face":
+                face = self.display.GetSelectedShape()
+                print(face)
+                gp_pnt, _, _ = occ.measure_shape_mass_center_of_gravity(face)
+                self.gp_pnt_coord = gp_pnt.Coord()
+                self.param_lineedits[self.pick_param_name].setText("gp_Pnt"+str(self.gp_pnt_coord))
+            elif self.to_pick == "edge":
+                edge = self.display.GetSelectedShape()
+                print(edge)
+                dumped_shape_name = self.shape_converter.dump_shape(edge)
+                self.shapemaker.set_name_dumped_shape(dumped_shape_name)
+
+    def create_shape(self):
+        # Récupérer les valeurs des paramètres depuis les QLineEdit
+        self.input_line = {}
+        for param_name, line_edit in self.param_lineedits.items():
+            self.input_line[param_name] = line_edit.text()
+
+        # Afficher le dictionnaire résultant dans le QLabel
+        self.result_text.clear()
+        self.result_text.setText(str(self.input_line))
+
+    def get_input(self):
+        return self.input_line
+    
+class CreateLayerDialog(QDialog):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
+
+    def initUI(self):
+        self.setWindowTitle('Saisie des informations')
+        self.setGeometry(300, 300, 300, 200)
+
+        self.layout = QVBoxLayout()
+
+        self.name_label = QtWidgets.QLabel('Nom:')
+        self.name_input = QtWidgets.QLineEdit()
+
+        self.color_label = QtWidgets.QLabel('Couleur (0 par défaut):')
+        self.color_input = QtWidgets.QLineEdit()
+        self.color_input.setText("0")
+
+        self.transparency_label = QtWidgets.QLabel('Transparence (100 par défaut):')
+        self.transparency_input = QtWidgets.QLineEdit()
+        self.transparency_input.setText("100")
+
+        self.layout.addWidget(self.name_label)
+        self.layout.addWidget(self.name_input)
+        self.layout.addWidget(self.color_label)
+        self.layout.addWidget(self.color_input)
+        self.layout.addWidget(self.transparency_label)
+        self.layout.addWidget(self.transparency_input)
+
+        self.submit_button = QPushButton('Valider')
+        self.layout.addWidget(self.submit_button)
+
+        self.setLayout(self.layout)
+
+        self.submit_button.clicked.connect(self.accept)
+
+    def get_user_input(self):
+        result = self.exec_()
+
+        if result == QDialog.Accepted:
+            name = self.name_input.text()
+            color = self.color_input.text()
+            transparency = self.transparency_input.text()
+            return name, color, transparency
+        else:
+            return None, None, None
