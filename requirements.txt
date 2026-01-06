@@ -6,26 +6,26 @@ colorama @ file:///home/conda/feedstock_root/build_artifacts/colorama_1602866480
 docopt==0.6.2
 docutils @ file:///C:/ci/docutils_1617481620173/work
 enum34==1.1.10
-idna==2.10
+idna==3.7
 importlib-metadata @ file:///C:/ci/importlib-metadata_1617877486026/work
 loguru @ file:///D:/bld/loguru_1602289534481/work
 more-itertools @ file:///tmp/build/80754af9/more-itertools_1613676688952/work
 multipledispatch==0.6.0
 npctypes==0.0.5
 numpy @ file:///D:/bld/numpy_1616933410625/work
-pipreqs==0.4.10
+pipreqs==0.4.12
 pyface @ file:///C:/ci/pyface_1614366094446/work
 Pygments @ file:///tmp/build/80754af9/pygments_1615143339740/work
 pyrr==0.10.3
 pywin32-ctypes @ file:///D:/bld/pywin32-ctypes_1610168318660/work
 QScintilla==2.11.2
 QtPy==1.9.0
-requests==2.25.1
+requests==2.31.0
 six @ file:///home/conda/feedstock_root/build_artifacts/six_1590081179328/work
 traits @ file:///C:/ci/traits_1611259464695/work
 traitsui @ file:///tmp/build/80754af9/traitsui_1612470540394/work
 typing-extensions @ file:///home/ktietz/src/ci_mi/typing_extensions_1612808209620/work
-urllib3==1.26.5
+urllib3==1.26.17
 vtk===-PKG-VERSION
 waiting==1.4.1
 win32-setctime @ file:///home/conda/feedstock_root/build_artifacts/win32_setctime_1601885290666/work
@@ -33,4 +33,5 @@ wincertstore==0.2
 wxPython==4.0.4
 yarg==0.1.9
 zipp @ file:///tmp/build/80754af9/zipp_1615904174917/work
+
 
