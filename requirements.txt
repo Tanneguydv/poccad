@@ -25,7 +25,6 @@ six @ file:///home/conda/feedstock_root/build_artifacts/six_1590081179328/work
 traits @ file:///C:/ci/traits_1611259464695/work
 traitsui @ file:///tmp/build/80754af9/traitsui_1612470540394/work
 typing-extensions @ file:///home/ktietz/src/ci_mi/typing_extensions_1612808209620/work
-urllib3==1.26.17
 vtk===-PKG-VERSION
 waiting==1.4.1
 win32-setctime @ file:///home/conda/feedstock_root/build_artifacts/win32_setctime_1601885290666/work
@@ -33,5 +32,6 @@ wincertstore==0.2
 wxPython==4.0.4
 yarg==0.1.9
 zipp @ file:///tmp/build/80754af9/zipp_1615904174917/work
+
 
 
